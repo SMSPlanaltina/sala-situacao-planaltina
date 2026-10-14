@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sala de Situação em Saúde — Planaltina/GO</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Leaflet CSS & JS (Mapas Vetoriais / GeoJSON do QGIS) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    #map-container {
+      height: 540px;
+      width: 100%;
+      border-radius: 0.75rem;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
+
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR (NÍVEL 1 DE NAVEGAÇÃO) -->
+    <aside id="sidebar" class="w-64 flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-200 z-30">
+      <div>
+        <!-- Logo / Cabeçalho Institucional -->
+        <div class="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-lg bg-sky-600 flex items-center justify-center text-white shadow-sm">
+            <i data-lucide="activity" class="w-5 h-5"></i>
+          </div>
+          <div class="leading-tight">
+            <h1 class="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Sala de Situação</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SMS • Planaltina/GO</p>
+          </div>
+        </div>
+
+        <!-- Menu Principal -->
+        <div class="p-3 space-y-1">
+          <p class="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Módulos Analíticos</p>
+
+          <button onclick="switchMainTab('visao-geral')" id="nav-visao-geral" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Visão Executiva</span>
+            </div>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Geral</span>
+          </button>
+
+          <button onclick="switchMainTab('pqavs')" id="nav-pqavs" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400">
+            <div class="flex items-center gap-3">
+              <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Vigilância (PQA-VS)</span>
+            </div>
+            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">14</span>
+          </button>
+
+          <button onclick="switchMainTab('aps')" id="nav-aps" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="heart-pulse" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Atenção Primária (APS)</span>
+            </div>
+            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">25 eSF</span>
+          </button>
+
+          <button onclick="switchMainTab('proprios')" id="nav-proprios" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="flame" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Indicadores Próprios</span>
+            </div>
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          </button>
+
+          <button onclick="switchMainTab('mapas')" id="nav-mapas" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Inteligência Geográfica</span>
+            </div>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">QGIS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Rodapé da Sidebar: Status da Planilha Google Sheets -->
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+        <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Fonte de Dados</span>
+            <span id="sync-badge" class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+            </span>
+          </div>
+          <p id="data-source-label" class="text-xs text-slate-600 dark:text-slate-300 truncate">Google Sheets / SIAPS</p>
+          <button onclick="openSheetsModal()" class="mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+            Conectar Google Sheets
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- TOPBAR FIXA (FILTROS GLOBAIS & AÇÕES) -->
+      <header class="h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between z-20">
+        <div class="flex items-center gap-3">
+          <h2 id="page-title" class="text-base font-semibold text-slate-900 dark:text-white">
+            Vigilância em Saúde (PQA-VS)
+          </h2>
+          <span class="hidden sm:inline-block text-slate-300 dark:text-slate-700">|</span>
+          <span id="page-subtitle" class="hidden sm:inline-block text-xs text-slate-500 dark:text-slate-400">
+            Portaria GM/MS Nº 6.878/2025 • 14 Indicadores Pactuados
+          </span>
+        </div>
+
+        <!-- Controles e Filtros Globais -->
+        <div class="flex items-center gap-2.5">
+          <!-- Filtro Ano -->
+          <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-2.5 py-1.5 border border-slate-200 dark:border-slate-700">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-500 mr-1.5"></i>
+            <label for="filter-year" class="text-xs text-slate-500 dark:text-slate-400 mr-1.5">Ano:</label>
+            <select id="filter-year" onchange="renderPqavs(currentIndicatorKey)" class="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+
+          <!-- Modo de Exibição dos Gráficos PQA-VS -->
+          <div id="top-chart-mode-wrapper" class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-2.5 py-1.5 border border-slate-200 dark:border-slate-700">
+            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-slate-500 mr-1.5"></i>
+            <select id="filter-chart-mode" onchange="renderPqavs(currentIndicatorKey)" class="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer">
+              <option value="adaptive" selected>Gráficos: Até Último Mês Registrado</option>
+              <option value="full">Gráficos: Ano Inteiro (Jan - Dez)</option>
+            </select>
+          </div>
+
+          <!-- Botão Ficha Técnica -->
+          <button onclick="toggleDrawer(true)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:hover:bg-sky-900 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/60 flex items-center gap-1.5 transition" title="Ver Ficha Técnica Oficial">
+            <i data-lucide="info" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Ficha Técnica</span>
+          </button>
+
+          <!-- Botão Dark Mode -->
+          <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Alternar Modo Escuro">
+            <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTEÚDO ROLÁVEL -->
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+        <!-- ==========================================
+             ABA 1: VIGILÂNCIA EM SAÚDE (PQA-VS - 14 INDICADORES)
+             ========================================== -->
+        <section id="tab-pqavs" class="space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Selecione o Indicador PQA-VS (Portaria GM/MS Nº 6.878/2025):</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span id="top-meta-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-medium border border-emerald-200 dark:border-emerald-800/60">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                  Meta Atingida
+                </span>
+              </div>
+            </div>
+            <div id="pqavs-subtabs-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1.5"></div>
+          </div>
+
+          <!-- BENTO GRID: 4 KPI CARDS PQA-VS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span id="card1-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Meta Anual Pactuada</span>
+                <span class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  <i data-lucide="target" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-3">
+                <div id="kpi-meta-anual" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">952</div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span id="card1-footer-left">Pactuação 2026</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-300">Ministério da Saúde</span>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span id="card2-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Meta Mensal Estimada</span>
+                <span class="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
+                  <i data-lucide="calendar-range" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-3">
+                <div id="kpi-meta-mensal" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">79,33</div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span id="card2-footer-left">Média linear (12 meses)</span>
+                <span id="card2-footer-right" class="font-mono text-sky-600 dark:text-sky-400">Meta/mês</span>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span id="card3-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Registros Acumulados</span>
+                <span class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                  <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-2.5 flex items-baseline gap-2">
+                <div id="kpi-acumulado" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">742</div>
+                <span id="kpi-perc-anual" class="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400">(77,9% do ano)</span>
+              </div>
+              <div class="space-y-2">
+                <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div id="kpi-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 77.9%"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="kpi-esperado-label">Esperado até Junho:</span>
+                  <strong id="kpi-esperado-valor" class="font-mono text-slate-700 dark:text-slate-300">475,98</strong>
+                </div>
+              </div>
+            </div>
+
+            <div id="kpi-saldo-card" class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-emerald-200/90 dark:border-emerald-900/60 shadow-sm flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <span id="card4-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Saldo de Registros (vs. Meta)</span>
+                <span id="kpi-saldo-icon" class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-3 flex items-baseline gap-2">
+                <div id="kpi-saldo" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">+266,02</div>
+                <span id="kpi-saldo-tag" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Superávit</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span id="kpi-performance-periodo">155,9% da meta até Jun</span>
+                <span id="kpi-status-meta" class="text-emerald-600 dark:text-emerald-400 font-semibold">Dentro da meta</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BENTO GRID: GRÁFICOS PRINCIPAIS PQA-VS -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 id="chart1-title" class="text-sm font-semibold text-slate-900 dark:text-white">Registros Acumulados vs. Meta Acumulada por Mês</h3>
+                  <p id="chart1-subtitle" class="text-xs text-slate-500 dark:text-slate-400">Evolução progressiva de Janeiro a Junho de 2026</p>
+                </div>
+                <span id="chart1-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Jan - Jun</span>
+              </div>
+              <div class="h-72">
+                <canvas id="chartAcumulado"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 id="chart2-title" class="text-sm font-semibold text-slate-900 dark:text-white">Registros Mensais vs. Meta Mensal por Mês</h3>
+                  <p id="chart2-subtitle" class="text-xs text-slate-500 dark:text-slate-400">Comparativo mensal direto contra a linha de corte (79,33)</p>
+                </div>
+                <span id="chart2-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Jan - Jun</span>
+              </div>
+              <div class="h-72">
+                <canvas id="chartMensal"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABELA PQA-VS -->
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 id="table-title" class="text-sm font-semibold text-slate-900 dark:text-white">Detalhamento Mensal Auditável (2026)</h3>
+                <p id="table-subtitle" class="text-xs text-slate-500 dark:text-slate-400">Alinhamento numérico tabular estrito para inspeção rápida</p>
+              </div>
+              <button onclick="exportCurrentCSV()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                Exportar Planilha Modelo (14 Indicadores)
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-800/40">
+                    <th class="py-3 px-4">Mês</th>
+                    <th id="th-col-mensal" class="py-3 px-4 text-right">Registros Mensais</th>
+                    <th id="th-col-meta-mes" class="py-3 px-4 text-right">Meta Mensal</th>
+                    <th id="th-col-acum" class="py-3 px-4 text-right">Acumulado Real</th>
+                    <th id="th-col-meta-acum" class="py-3 px-4 text-right">Meta Acumulada</th>
+                    <th id="th-col-saldo" class="py-3 px-4 text-right">Saldo Acumulado</th>
+                    <th class="py-3 px-4 text-center">Status Mensal</th>
+                  </tr>
+                </thead>
+                <tbody id="pqavs-table-body" class="divide-y divide-slate-200/60 dark:divide-slate-800 text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 2: VISÃO EXECUTIVA (RESUMO DOS 14 INDICADORES + APS)
+             ========================================== -->
+        <section id="tab-visao-geral" class="hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">PQA-VS (Vigilância)</span>
+                <span id="exec-pqavs-badge" class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">12 / 14 metas</span>
+              </div>
+              <div id="exec-pqavs-perc" class="text-2xl font-bold tabular-nums mb-1">85,7%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Proporção global dos 14 indicadores do PQA-VS (Portaria GM/MS Nº 6.878/2025) dentro da meta.</p>
+            </div>
+
+            <div onclick="switchMainTab('aps')" class="cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 transition shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Atenção Primária (APS)</span>
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">25 eSF em 22 UBS</span>
+              </div>
+              <div class="text-2xl font-bold tabular-nums mb-1">36,31 pts (Mais Acesso)</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Média de pontuação nas 25 eSF (11.832 atendimentos totais: 4.260 programados e 7.572 espontâneos).</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">Vigilância de Arboviroses</span>
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Baixa Transmissão</span>
+              </div>
+              <div class="text-2xl font-bold tabular-nums mb-1">IIP: 0,9%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Índice de Infestação Predial (LIRAa) abaixo do limite de alerta de 1,0% no último ciclo.</p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 class="text-sm font-semibold">Painel Semafórico Rápido — 14 Indicadores do PQA-VS (Planaltina/GO)</h3>
+                <p class="text-xs text-slate-500">Clique em qualquer cartão para abrir a análise detalhada do indicador</p>
+              </div>
+              <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Portaria GM/MS Nº 6.878/2025</span>
+            </div>
+            <div id="exec-semaforo-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5"></div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 3: ATENÇÃO PRIMÁRIA À SAÚDE (APS - PORTARIA GM/MS 3.493/2024 E 7.799/2025)
+             ========================================== -->
+        <section id="tab-aps" class="hidden space-y-6">
+
+          <!-- CABEÇALHO DE GOVERNANÇA APS + SUB-ABAS INTERNAS -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/70 dark:border-slate-800 pb-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <button onclick="switchApsSubView('diagnostico')" id="btn-aps-view-diagnostico" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-400 shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="stethoscope" class="w-3.5 h-3.5"></i>
+                    <span>Diagnóstico por Equipe / UBS (Boas Práticas)</span>
+                  </button>
+                  <button onclick="switchApsSubView('ranking')" id="btn-aps-view-ranking" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 flex items-center gap-1.5">
+                    <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-500"></i>
+                    <span>Ranking Geral (25 eSF)</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Resumo Limpo da Rede Ativa -->
+              <div class="flex flex-wrap items-center gap-2 text-[11px]">
+                <span class="px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-medium">
+                  <strong>Rede Ativa:</strong> 25 eSF em 22 UBS
+                </span>
+              </div>
+            </div>
+
+            <!-- BARRA DE COMANDO DUPLA (2 SELETORES SUSPENSOS INTELIGENTES) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
+              <!-- Seletor Suspenso 1: Eixo Temático em Ordem Estrita 1 a 8 (Apenas Portaria) -->
+              <div>
+                <label for="aps-select-eixo" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                  1. Eixo Temático — Componente de Qualidade (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)
+                </label>
+                <div class="relative">
+                  <select id="aps-select-eixo" onchange="handleApsSelectionChange()" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
+                    <option value="mais_acesso" selected>1. Mais Acesso à APS (Demanda Programada vs. Espontânea)</option>
+                    <option value="gestacao">2. Cuidado na Gestação e Puerpério (11 Ações / Boas Práticas)</option>
+                    <option value="infantil">3. Cuidado no Desenvolvimento Infantil (Puericultura / Vacinas)</option>
+                    <option value="hipertensao">4. Cuidado da Pessoa com Hipertensão Arterial (Consulta + PA + Antropometria)</option>
+                    <option value="diabetes">5. Cuidado da Pessoa com Diabetes Mellitus (Consulta + PA + HbA1c + Exame dos Pés)</option>
+                    <option value="mulher">6. Cuidado da Mulher na Prevenção do Câncer (Citopatológico / Rastreamento)</option>
+                    <option value="idoso">7. Cuidado da Pessoa Idosa (Avaliação Multidimensional / Visitas ACS)</option>
+                    <option value="bucal_emulti">8. Saúde Bucal (eSB) e Equipes Multiprofissionais (eMulti)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Seletor Suspenso 2: Unidade / Equipe Analisada (Sem Consolidado por Prédio) -->
+              <div id="aps-team-selector-wrapper">
+                <label for="aps-select-equipe" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                  2. Unidade / Equipe Analisada (25 eSF • INE Equipe + UBS)
+                </label>
+                <div class="relative">
+                  <select id="aps-select-equipe" onchange="handleApsSelectionChange()" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
+                    <!-- Preenchido dinamicamente pelo JS -->
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-VIEW APS 1: DIAGNÓSTICO POR EQUIPE / UBS
+               ========================================== -->
+          <div id="aps-subview-diagnostico" class="space-y-6">
+
+            <!-- BLOCO 1: OS 4 CARTÕES DE DIAGNÓSTICO RÁPIDO (BENTO GRID) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Card APS 1: Pontuação Oficial no Indicador Selecionado -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="aps-kpi1-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Pontuação no Indicador</span>
+                  <span id="aps-kpi1-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Suficiente</span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                  <div id="aps-kpi1-value" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">14,46</div>
+                  <span id="aps-kpi1-rank" class="text-xs font-mono font-semibold text-sky-600 dark:text-sky-400">#21 de 25 eSF</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="aps-kpi1-footer-left">Média das 25 eSF: 36,31</span>
+                  <span id="aps-kpi1-footer-right" class="font-mono font-semibold text-slate-700 dark:text-slate-300">Média 8 Ind: 33,4</span>
+                </div>
+              </div>
+
+              <!-- Card APS 2: Faixas Oficiais de Pontuação do Indicador (Especialmente Mais Acesso) -->
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-200/80 dark:border-sky-900/50 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span id="aps-kpi2-title" class="text-xs font-semibold text-slate-700 dark:text-slate-200">Parâmetros da Pontuação</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300">SIAPS / MS</span>
+                </div>
+                <div id="aps-kpi2-faixas-list" class="space-y-1 text-[11px]">
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Ótimo:</span>
+                    <span class="font-mono text-slate-700 dark:text-slate-300">&gt; 50% e &le; 70%</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1.5 font-semibold text-sky-700 dark:text-sky-400"><span class="w-2 h-2 rounded-full bg-sky-500"></span>Bom:</span>
+                    <span class="font-mono text-slate-700 dark:text-slate-300">&gt; 30% e &le; 50%</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Suficiente:</span>
+                    <span class="font-mono text-slate-700 dark:text-slate-300">&gt; 10% e &le; 30%</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1.5 font-semibold text-rose-700 dark:text-rose-400"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Regular:</span>
+                    <span class="font-mono text-slate-700 dark:text-slate-300">&le; 10% ou &gt; 70%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card APS 3: Destaque / Demanda Programada ou Maior Conformidade -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/50 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="aps-kpi3-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Demanda Programada</span>
+                  <span class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                    <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                  </span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                  <div id="aps-kpi3-value" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">83</div>
+                  <span id="aps-kpi3-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Numerador</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="aps-kpi3-footer" class="truncate font-medium text-slate-700 dark:text-slate-300">Atendimentos por Demanda Programada</span>
+                </div>
+              </div>
+
+              <!-- Card APS 4: Demanda Total (Espontânea + Programada) ou Gargalo -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="aps-kpi4-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Total de Atendimentos (Todos Tipos)</span>
+                  <span class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                  </span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                  <div id="aps-kpi4-value" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">574</div>
+                  <span id="aps-kpi4-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">491 Espontâneos</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="aps-kpi4-footer" class="truncate font-medium text-slate-600 dark:text-slate-400">Denominador (Programada + Espontânea)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BLOCO 2: OS 2 GRÁFICOS PRINCIPAIS LADO A LADO -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Gráfico da Esquerda: Checklist / Composição do Indicador na Equipe -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 id="aps-chart-left-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                      Composição do Indicador — eSF 01 (Qd 03 Setor Oeste)
+                    </h3>
+                    <p id="aps-chart-left-subtitle" class="text-xs text-slate-500 dark:text-slate-400">
+                      Detalhamento dos componentes avaliados na unidade selecionada
+                    </p>
+                  </div>
+                  <span id="aps-chart-left-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300">Componentes</span>
+                </div>
+                <div class="h-96">
+                  <canvas id="chartApsBoasPraticas"></canvas>
+                </div>
+              </div>
+
+              <!-- Gráfico da Direita: Posição da Equipe por PONTUAÇÃO entre as 25 eSF -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 id="aps-chart-right-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                      Pontuação entre as 25 eSF Ativas no Indicador Selecionado
+                    </h3>
+                    <p id="aps-chart-right-subtitle" class="text-xs text-slate-500 dark:text-slate-400">
+                      Cores indicam a faixa oficial (Verde = Ótimo • Azul = Bom • Amarelo = Suficiente • Vermelho = Regular)
+                    </p>
+                  </div>
+                  <button onclick="switchApsSubView('ranking')" class="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
+                    <span>Ver Ranking Geral (25 eSF)</span>
+                    <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+                <div class="h-96">
+                  <canvas id="chartApsMiniRanking"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- BLOCO 3: SUMÁRIO GERAL DOS 8 INDICADORES DA UNIDADE / MUNICÍPIO SELECIONADO -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 id="aps-summary-8-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Sumário Geral dos 8 Indicadores da Portaria — eSF 01 — Qd 03 Setor Oeste
+                  </h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Visão consolidada da pontuação da unidade em cada um dos 8 indicadores e Média Geral de Qualidade
+                  </p>
+                </div>
+                <span id="aps-summary-8-avg-badge" class="text-xs font-mono font-bold px-3 py-1 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                  Média Geral dos 8 Indicadores: 33,40 pts
+                </span>
+              </div>
+              <div id="aps-summary-8-grid" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+            </div>
+
+            <!-- BLOCO 4: TABELA AUDITÁVEL DE BOAS PRÁTICAS DO EIXO SELECIONADO -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 id="aps-diag-table-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Checklist Auditável — 1. Mais Acesso à APS
+                  </h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Detalhamento nominal dos componentes do indicador selecionado
+                  </p>
+                </div>
+                <button onclick="exportApsCSV()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  Exportar Base APS (25 eSF)
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-800/40">
+                      <th class="py-3 px-4">#</th>
+                      <th class="py-3 px-4">Componente / Boa Prática Avaliada no Eixo</th>
+                      <th class="py-3 px-4 text-right">Volume / Resultado</th>
+                      <th class="py-3 px-4 text-right">Proporção / Referência</th>
+                      <th class="py-3 px-4 text-center">Status / Avaliação</th>
+                    </tr>
+                  </thead>
+                  <tbody id="aps-boas-praticas-tbody" class="divide-y divide-slate-200/60 dark:divide-slate-800 text-xs"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ==========================================
+               SUB-VIEW APS 2: RANKING GERAL (25 eSF) — BASEADO EM PONTUAÇÃO / QUALIDADE
+               ========================================== -->
+          <div id="aps-subview-ranking" class="hidden space-y-6">
+
+            <!-- BARRA DE MODO DO RANKING (INDICADOR ATUAL vs MÉDIA GERAL DOS 8 INDICADORES) -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Critério de Classificação do Ranking Geral (25 eSF)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">O ranking avalia a <strong>Pontuação de Qualidade</strong> (e não o volume bruto de atendimentos)</p>
+              </div>
+              <div class="inline-flex flex-wrap p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 gap-1">
+                <button onclick="setRankingMode('eixo_faixa')" id="btn-rank-mode-eixo_faixa" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-400 shadow-sm">
+                  Pontuação no Indicador Selecionado (Faixa Ótimo → Regular)
+                </button>
+                <button onclick="setRankingMode('media_8')" id="btn-rank-mode-media_8" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                  Sumário Geral: Média dos 8 Indicadores
+                </button>
+                <button onclick="setRankingMode('eixo_bruto')" id="btn-rank-mode-eixo_bruto" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                  Pontuação Bruta (Maior → Menor)
+                </button>
+              </div>
+            </div>
+
+            <!-- PÓDIO TOP 3 EQUIPES POR PONTUAÇÃO / DESEMPENHO -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- 1º Lugar (Ouro) -->
+              <div class="bg-gradient-to-br from-amber-50/90 via-white to-white dark:from-amber-950/30 dark:via-slate-900 dark:to-slate-900 p-5 rounded-xl border-2 border-amber-300/80 dark:border-amber-700/60 shadow-sm relative overflow-hidden">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                    <i data-lucide="medal" class="w-4 h-4"></i> 1º Lugar (Pontuação)
+                  </span>
+                  <span id="podium-1-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-bold">Ótimo</span>
+                </div>
+                <h4 id="podium-1-name" class="text-base font-bold text-slate-900 dark:text-white truncate">eSF 04 — Qd 02 Leste</h4>
+                <p id="podium-1-cnes" class="text-xs text-slate-500 dark:text-slate-400 mb-3">CNES 2438631 • UBS ESF 04 e ESF 19 Qd 02 Leste</p>
+                <div class="flex items-baseline justify-between pt-2 border-t border-amber-200/60 dark:border-amber-800/40">
+                  <div>
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Pontuação Oficial</span>
+                    <span id="podium-1-score" class="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">58,12</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Produção Base</span>
+                    <span id="podium-1-class" class="text-xs font-bold text-slate-700 dark:text-slate-300">333 prog. / 573 total</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2º Lugar (Prata) -->
+              <div class="bg-gradient-to-br from-slate-100/80 via-white to-white dark:from-slate-800/50 dark:via-slate-900 dark:to-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    <i data-lucide="award" class="w-4 h-4"></i> 2º Lugar (Pontuação)
+                  </span>
+                  <span id="podium-2-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-semibold">Ótimo</span>
+                </div>
+                <h4 id="podium-2-name" class="text-base font-bold text-slate-900 dark:text-white truncate">eSF 19 — Qd 02 Leste</h4>
+                <p id="podium-2-cnes" class="text-xs text-slate-500 dark:text-slate-400 mb-3">CNES 2438631 • UBS ESF 04 e ESF 19 Qd 02 Leste</p>
+                <div class="flex items-baseline justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <div>
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Pontuação Oficial</span>
+                    <span id="podium-2-score" class="text-2xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">52,19</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Produção Base</span>
+                    <span id="podium-2-class" class="text-xs font-bold text-slate-700 dark:text-slate-300">155 prog. / 297 total</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3º Lugar (Bronze) -->
+              <div class="bg-gradient-to-br from-orange-50/70 via-white to-white dark:from-orange-950/20 dark:via-slate-900 dark:to-slate-900 p-5 rounded-xl border border-orange-200/80 dark:border-orange-800/50 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-700 dark:text-orange-400">
+                    <i data-lucide="award" class="w-4 h-4"></i> 3º Lugar (Pontuação)
+                  </span>
+                  <span id="podium-3-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 font-semibold">Bom</span>
+                </div>
+                <h4 id="podium-3-name" class="text-base font-bold text-slate-900 dark:text-white truncate">eSF 21 — Bairro São José</h4>
+                <p id="podium-3-cnes" class="text-xs text-slate-500 dark:text-slate-400 mb-3">CNES 5065917 • UBS ESF 21 Bairro São José</p>
+                <div class="flex items-baseline justify-between pt-2 border-t border-orange-200/50 dark:border-orange-900/40">
+                  <div>
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Pontuação Oficial</span>
+                    <span id="podium-3-score" class="text-2xl font-bold text-orange-600 dark:text-orange-400 tabular-nums">48,91</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Produção Base</span>
+                    <span id="podium-3-class" class="text-xs font-bold text-slate-700 dark:text-slate-300">270 prog. / 552 total</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DISTRIBUIÇÃO DAS 25 eSF POR FAIXA DE DESEMPENHO (ÓTIMO / BOM / SUFICIENTE / REGULAR) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-emerald-600 dark:text-emerald-400">Faixa Ótimo</span>
+                  <div id="rank-count-otimo" class="text-2xl font-bold tabular-nums mt-0.5">2 eSF</div>
+                  <span id="rank-desc-otimo" class="text-[11px] text-slate-500 font-mono">&gt; 50% e &le; 70%</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-emerald-500"></span>
+              </div>
+
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-200 dark:border-sky-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-sky-600 dark:text-sky-400">Faixa Bom</span>
+                  <div id="rank-count-bom" class="text-2xl font-bold tabular-nums mt-0.5">13 eSF</div>
+                  <span id="rank-desc-bom" class="text-[11px] text-slate-500 font-mono">&gt; 30% e &le; 50%</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-sky-500"></span>
+              </div>
+
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-amber-600 dark:text-amber-400">Faixa Suficiente</span>
+                  <div id="rank-count-suficiente" class="text-2xl font-bold tabular-nums mt-0.5">7 eSF</div>
+                  <span id="rank-desc-suficiente" class="text-[11px] text-slate-500 font-mono">&gt; 10% e &le; 30%</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-amber-500"></span>
+              </div>
+
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-rose-200 dark:border-rose-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-rose-600 dark:text-rose-400">Faixa Regular</span>
+                  <div id="rank-count-regular" class="text-2xl font-bold tabular-nums mt-0.5">3 eSF</div>
+                  <span id="rank-desc-regular" class="text-[11px] text-slate-500 font-mono">&le; 10% ou &gt; 70%</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-rose-500"></span>
+              </div>
+            </div>
+
+            <!-- GRÁFICO GERAL DO RANKING DE PONTUAÇÃO DAS 25 EQUIPES ATIVAS -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                  <h3 id="aps-full-ranking-chart-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Ranking Geral (25 eSF) — Pontuação no Indicador Selecionado
+                  </h3>
+                  <p id="aps-full-ranking-chart-subtitle" class="text-xs text-slate-500 dark:text-slate-400">
+                    Barras coloridas conforme a faixa de qualidade alcançada pela equipe (Ótimo, Bom, Suficiente, Regular)
+                  </p>
+                </div>
+                <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">25 eSF Ativas</span>
+              </div>
+              <div class="h-[540px]">
+                <canvas id="chartApsFullRanking"></canvas>
+              </div>
+            </div>
+
+            <!-- TABELA COMPLETA DO RANKING GERAL (PONTUAÇÃO DO EIXO + MÉDIA DOS 8 INDICADORES + PRODUÇÃO) -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Tabela do Ranking Geral (25 eSF) — Pontuação e Sumário de Qualidade</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Comparativo completo pela Pontuação no Indicador, Classificação Oficial e Média Geral dos 8 Indicadores da UBS</p>
+                </div>
+                <button onclick="exportApsCSV()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  Exportar Ranking CSV
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-800/40">
+                      <th class="py-3 px-4">Pos.</th>
+                      <th class="py-3 px-4">Unidade / Equipe (INE — Bairro)</th>
+                      <th class="py-3 px-4">CNES</th>
+                      <th id="th-rank-score-col" class="py-3 px-4 text-right">Pontuação (Mais Acesso)</th>
+                      <th class="py-3 px-4 text-center">Faixa no Indicador</th>
+                      <th class="py-3 px-4 text-right">Média Geral (8 Ind.)</th>
+                      <th class="py-3 px-4 text-right">Dem. Programada</th>
+                      <th class="py-3 px-4 text-right">Dem. Espontânea</th>
+                      <th class="py-3 px-4 text-right">Total Atend. (Todos)</th>
+                      <th class="py-3 px-4 text-center">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody id="aps-ranking-tbody" class="divide-y divide-slate-200/60 dark:divide-slate-800 text-xs"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             ABA 4: INDICADORES PRÓPRIOS (MUNICIPAIS)
+             ========================================== -->
+        <section id="tab-proprios" class="hidden space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Diagrama de Controle Epidemiológico — Arboviroses (Dengue)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Casos notificados em 2026 comparados ao Limite Endêmico e Limite Epidêmico (Série Histórica)</p>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">Vigilância Ativa Sazonal</span>
+            </div>
+            <div class="h-80">
+              <canvas id="chartDiagramaControle"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 5: INTELIGÊNCIA GEOGRÁFICA (MAPAS / QGIS)
+             ========================================== -->
+        <section id="tab-mapas" class="hidden space-y-4">
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-semibold">Georreferenciamento Epidemiológico e Territorialização das 22 UBS / 25 eSF — Planaltina/GO</h3>
+              <p class="text-xs text-slate-500">Suporte nativo a arquivos <code class="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">.geojson</code> exportados diretamente do QGIS ou Google My Maps</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white flex items-center gap-1.5 transition shadow-sm">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                <span>Importar Camada GeoJSON (QGIS)</span>
+                <input type="file" accept=".geojson,.json" onchange="handleGeoJSONUpload(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div id="map-container"></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- GAVETA LATERAL (SLIDE-OVER DRAWER): FICHA TÉCNICA DO INDICADOR -->
+  <div id="drawer-backdrop" onclick="toggleDrawer(false)" class="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-40 hidden"></div>
+  <aside id="info-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-50 transform translate-x-full transition-transform duration-200 flex flex-col justify-between">
+    <div class="p-6 overflow-y-auto space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="book-open-check" class="w-5 h-5 text-sky-600"></i>
+          <h3 class="font-bold text-base">Ficha Técnica Oficial</h3>
+        </div>
+        <button onclick="toggleDrawer(false)" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs leading-relaxed">
+        <!-- Parâmetros Demográficos e Estruturais de Planaltina/GO na Ficha Técnica -->
+        <div class="p-3.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">Perfil Demográfico e Estrutural do Município</span>
+          <p class="font-mono text-xs font-bold text-slate-900 dark:text-white">
+            IBGE 521760: 105.031 hab (Porte 4 • IVS 2 • IED Estrato 3)
+          </p>
+          <p class="text-[11px] text-slate-600 dark:text-slate-300">
+            Rede de Atenção Primária composta por 25 Equipes de Saúde da Família (eSF) distribuídas em 22 Unidades Básicas de Saúde (UBS). Parâmetro de cadastro por eSF (Portaria GM/MS Nº 3.493/2024): 3.000 pessoas (Teto: 4.500).
+          </p>
+        </div>
+
+        <div>
+          <span class="text-[11px] font-semibold uppercase text-slate-400">Indicador / Eixo Selecionado</span>
+          <p id="drawer-ind-title" class="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">-</p>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <span class="text-[11px] font-semibold uppercase text-sky-600 dark:text-sky-400">Meta Oficial e Método de Cálculo</span>
+          <p id="drawer-ind-formula" class="font-mono text-xs mt-1 text-slate-800 dark:text-slate-200">-</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] uppercase text-slate-400 font-semibold">Fonte Oficial</span>
+            <p id="drawer-ind-source" class="font-semibold mt-0.5">-</p>
+          </div>
+          <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] uppercase text-slate-400 font-semibold">Parâmetro Pactuado</span>
+            <p id="drawer-ind-target" class="font-mono font-bold mt-0.5">-</p>
+          </div>
+        </div>
+
+        <div>
+          <span class="text-[11px] font-semibold uppercase text-slate-400">Diretrizes Técnicas (Ministério da Saúde)</span>
+          <p id="drawer-ind-desc" class="text-slate-600 dark:text-slate-300 mt-1">-</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <button onclick="toggleDrawer(false)" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold">
+        Fechar Ficha Técnica
+      </button>
+    </div>
+  </aside>
+
+  <!-- MODAL DE CONEXÃO COM GOOGLE SHEETS -->
+  <div id="sheets-modal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600">
+            <i data-lucide="sheet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold">Sincronização Automática com Google Sheets</h3>
+            <p class="text-xs text-slate-500">Suporte completo ao PQA-VS (14 Indicadores) e APS (25 eSF)</p>
+          </div>
+        </div>
+        <button onclick="closeSheetsModal()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+          Para o <strong>PQA-VS</strong>, use os códigos <code class="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">sim, sinasc, cnes, pni, sisagua, dnci, malaria, arboviroses, hanseniase, tuberculose, sifilis, aids, trabalhador, violencia</code>.
+        </p>
+
+        <div>
+          <label class="block text-[11px] font-semibold uppercase text-slate-500 mb-1">URL Pública CSV do Google Sheets (PQA-VS)</label>
+          <input id="sheets-csv-url" type="url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTiqKgbt7hub-wVn2Az-ggYdMZP8I4qzXxtBI_SNKfZbq5BcfV2V-EvLiNAiQszOkHbO2GCzczzeRv5/pub?output=csv" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div class="flex items-center gap-3">
+            <button onclick="downloadTemplateCSV()" class="text-xs font-semibold text-sky-600 hover:underline flex items-center gap-1">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              Modelo PQA-VS (.CSV)
+            </button>
+            <button onclick="exportApsCSV()" class="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              Modelo APS 25 eSF (.CSV)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="closeSheetsModal()" class="px-3 py-2 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800">Cancelar</button>
+            <button onclick="connectGoogleSheets()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">Sincronizar Dados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LÓGICA DA APLICAÇÃO (JAVASCRIPT PURO) -->
+  <script>
+    lucide.createIcons();
+
+    const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    const MESES_EXTENSO = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+    const DEFAULT_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTiqKgbt7hub-wVn2Az-ggYdMZP8I4qzXxtBI_SNKfZbq5BcfV2V-EvLiNAiQszOkHbO2GCzczzeRv5/pub?output=csv";
+
+    // =========================================================================
+    // 1. BASE DE DADOS PQA-VS (14 INDICADORES - PORTARIA GM/MS Nº 6.878/2025)
+    // =========================================================================
+    const DATABASE = {
+      sim: {
+        num: '01', curto: 'Mortalidade (SIM)', titulo: '1 - Mortalidade (SIM)', fonte: 'SIM / SVSA / MS',
+        metaOficialTexto: '90% dos óbitos até 60 dias',
+        formula: 'Numerador: Óbitos notificados até 60 dias após o fim do mês. Denominador: Total de óbitos estimados (482).',
+        descricao: 'Avalia a oportunidade e regularidade da alimentação do Sistema de Informação sobre Mortalidade (SIM).',
+        metaAnual: 482, metaMensal: 40.17, menorMelhor: false,
+        mensalReal: [47, 33, 49, 38, 57, 41, 44, 36, 21, null, null, null]
+      },
+      sinasc: {
+        num: '02', curto: 'Nascidos Vivos (SINASC)', titulo: '2 - Nascidos Vivos (SINASC)', fonte: 'SINASC / SVSA / MS',
+        metaOficialTexto: '90% dos nascidos vivos até 60 dias',
+        formula: 'Numerador: Nascidos vivos notificados no Sinasc até 60 dias após o fim do mês. Denominador: Total estimado (952).',
+        descricao: 'Subsidia o monitoramento da saúde materna e infantil por meio da captação oportuna de Declarações de Nascido Vivo.',
+        metaAnual: 952, metaMensal: 79.33, menorMelhor: false,
+        mensalReal: [132, 110, 122, 111, 139, 128, null, null, null, null, null, null]
+      },
+      cnes: {
+        num: '03', curto: 'Salas de Vacina (CNES)', titulo: '3 - Salas de Vacina Informando (CNES)', fonte: 'RNDS / CNES (Serviço 174)',
+        metaOficialTexto: '≥ 80% das salas ativas informando/mês',
+        formula: 'Média de salas ativas (serviço 174) informando mensalmente dados de vacinação para a RNDS / Total de salas ativas.',
+        descricao: 'Monitora a regularidade de envio mensal de dados de imunização pelas salas de vacina públicas cadastradas no CNES.',
+        metaAnual: 80, metaMensal: 80.00, menorMelhor: false,
+        mensalReal: [88.9, 88.9, 94.4, 94.4, 100.0, 94.4, null, null, null, null, null, null]
+      },
+      pni: {
+        num: '04', curto: 'Cobertura Vacinal (PNI)', titulo: '4 - Cobertura Vacinal Preconizada (PNI)', fonte: 'RNDS / SI-PNI / SINASC',
+        metaOficialTexto: '100% das 4 vacinas com cobertura ≥ 95%',
+        formula: 'Proporção das 4 vacinas selecionadas (Pentavalente 3ªd, Pneumo 10v 2ªd, Polio 3ªd em <1 ano e Tríplice Viral 1ªd em 1 ano) com cobertura ≥ 95%.',
+        descricao: 'Estimula altas e homogêneas coberturas vacinais em crianças menores de 1 ano e de 1 ano de idade.',
+        metaAnual: 95, metaMensal: 95.00, menorMelhor: false,
+        mensalReal: [95.2, 94.1, 96.4, 95.8, 97.1, 96.0, null, null, null, null, null, null]
+      },
+      sisagua: {
+        num: '05', curto: 'Qualidade da Água (SISAGUA)', titulo: '5 - Análises de Cloro Residual (SISAGUA)', fonte: 'SISAGUA / Vigiagua',
+        metaOficialTexto: '≥ 75% das análises obrigatórias (RAD)',
+        formula: 'Amostras analisadas para Residual de Agente Desinfetante / Mínimo previsto na Diretriz Nacional.',
+        descricao: 'Avalia o cumprimento do plano de amostragem de vigilância da qualidade da água para consumo humano.',
+        metaAnual: 540, metaMensal: 45.00, menorMelhor: false,
+        mensalReal: [48, 46, 50, 44, 52, 49, null, null, null, null, null, null]
+      },
+      dnci: {
+        num: '06', curto: 'Notificação Imediata (DNCI)', titulo: '6 - Encerramento Oportuno de DNCI (SINAN)', fonte: 'SINAN Net e Online',
+        metaOficialTexto: '≥ 80% encerrados em até 60 dias',
+        formula: '(Total de registros de DNCI encerrados em ≤ 60 dias / Total de DNCI notificados) × 100.',
+        descricao: 'Representa a capacidade de pronta detecção, investigação e encerramento oportuno de agravos de notificação imediata.',
+        metaAnual: 80, metaMensal: 80.00, menorMelhor: false,
+        mensalReal: [85.0, 82.5, 88.0, 79.0, 90.0, 86.5, null, null, null, null, null, null]
+      },
+      malaria: {
+        num: '07', curto: 'Malária (Trat. Oportuno)', titulo: '7 - Tratamento Oportuno de Malária', fonte: 'SINAN / Sivep-Malária',
+        metaOficialTexto: '≥ 70% em tempo oportuno (48h/96h)',
+        formula: '(Autóctones tratados em ≤ 48h + Importados tratados em ≤ 96h) / Total de casos sintomáticos sem LVC × 100.',
+        descricao: 'Avalia a oportunidade do diagnóstico e tratamento antimalárico na rede.',
+        metaAnual: 70, metaMensal: 70.00, menorMelhor: false,
+        mensalReal: [100.0, 100.0, 75.0, 100.0, 80.0, 100.0, null, null, null, null, null, null]
+      },
+      arboviroses: {
+        num: '08', curto: 'Óbitos Arboviroses', titulo: '8 - Óbitos Suspeitos de Dengue e Chikungunya', fonte: 'SINAN Online',
+        metaOficialTexto: '≥ 75% encerrados em até 60 dias',
+        formula: '(Óbitos suspeitos de dengue + chikungunya encerrados em ≤ 60 dias) / Total de óbitos suspeitos notificados × 100.',
+        descricao: 'Reflete a capacidade de investigação laboratorial e encerramento oportuno de óbitos por arboviroses.',
+        metaAnual: 75, metaMensal: 75.00, menorMelhor: false,
+        mensalReal: [80.0, 75.0, 85.0, 80.0, 90.0, 85.0, null, null, null, null, null, null]
+      },
+      hanseniase: {
+        num: '09', curto: 'Contatos de Hanseníase', titulo: '9 - Exame de Contatos de Hanseníase', fonte: 'SINAN / Coortes PB e MB',
+        metaOficialTexto: '≥ 82% dos contatos examinados',
+        formula: '(Contatos examinados de casos novos PB e MB nas coortes / Total de contatos registrados nas coortes) × 100.',
+        descricao: 'Mede a vigilância ativa de contatos domiciliares para detecção precoce e quebra da cadeia de transmissão.',
+        metaAnual: 82, metaMensal: 82.00, menorMelhor: false,
+        mensalReal: [80.0, 83.5, 85.0, 86.2, 88.0, 89.4, null, null, null, null, null, null]
+      },
+      tuberculose: {
+        num: '10', curto: 'Contatos de Tuberculose', titulo: '10 - Exame de Contatos de Tuberculose Pulmonar', fonte: 'SINAN Tuberculose',
+        metaOficialTexto: '≥ 70% dos contatos examinados',
+        formula: '(Contatos examinados de casos novos de TB pulmonar com confirmação laboratorial / Total de contatos identificados) × 100.',
+        descricao: 'Avalia a busca ativa de casos de tuberculose ativa e infecção latente (ILTB) entre contatos expostos.',
+        metaAnual: 70, metaMensal: 70.00, menorMelhor: false,
+        mensalReal: [72.0, 68.5, 74.0, 76.5, 78.0, 75.0, null, null, null, null, null, null]
+      },
+      sifilis: {
+        num: '11', curto: 'Sífilis Congênita', titulo: '11 - Razão Sífilis Congênita / Gestantes', fonte: 'SINAN / DATHI',
+        metaOficialTexto: 'Redução de 1 p.p. ou manutenção de 0%',
+        formula: '(Casos de sífilis congênita em < 1 ano / Total de casos de sífilis em gestantes residentes) × 100. Meta: ≤ Teto.',
+        descricao: 'Expressa a efetividade da testagem e tratamento oportuno da gestante e parcerias no pré-natal (Menor é melhor).',
+        metaAnual: 8.0, metaMensal: 8.00, menorMelhor: true,
+        mensalReal: [7.5, 6.8, 7.2, 6.5, 6.0, 5.8, null, null, null, null, null, null]
+      },
+      aids: {
+        num: '12', curto: 'Aids Avançada (CD4<200)', titulo: '12 - Diagnóstico Tardio de HIV/Aids (CD4 < 200)', fonte: 'SISCEL / DATHI',
+        metaOficialTexto: 'Redução de 1 p.p. ou manutenção de 0%',
+        formula: '(Casos novos de aids com LT-CD4 < 200 cels/mm³ no SISCEL / Total de casos novos registrados) × 100. Meta: ≤ Teto.',
+        descricao: 'Mede a capacidade de diagnóstico precoce do HIV antes da imunossupressão avançada (Menor é melhor).',
+        metaAnual: 22.0, metaMensal: 22.00, menorMelhor: true,
+        mensalReal: [25.0, 24.0, 23.5, 22.8, 24.2, 23.0, null, null, null, null, null, null]
+      },
+      trabalhador: {
+        num: '13', curto: 'Saúde do Trabalhador', titulo: '13 - Qualificação CBO e CNAE (Saúde do Trabalhador)', fonte: 'SINAN (AT, ATMBIO e IERT)',
+        metaOficialTexto: '≥ 90% de preenchimento CBO/CNAE',
+        formula: '(Proporção de preenchimento válido do campo Ocupação [CBO] + Proporção do campo Atividade Econômica [CNAE]) / 2 × 100.',
+        descricao: 'Qualifica o mapeamento de riscos ocupacionais nos agravos de acidente de trabalho e intoxicação exógena.',
+        metaAnual: 90, metaMensal: 90.00, menorMelhor: false,
+        mensalReal: [91.2, 92.5, 90.8, 93.4, 94.0, 95.1, null, null, null, null, null, null]
+      },
+      violencia: {
+        num: '14', curto: 'Violência (Raça/Cor)', titulo: '14 - Preenchimento Raça/Cor Válida (VIVA/SINAN)', fonte: 'VIVA / SINAN',
+        metaOficialTexto: '≥ 95% com raça/cor válida',
+        formula: '(Notificações de violência interpessoal e autoprovocada com raça/cor válida / Total notificado) × 100.',
+        descricao: 'Promove a equidade e qualifica a análise epidemiológica das violências segundo recorte étnico-racial.',
+        metaAnual: 95, metaMensal: 95.00, menorMelhor: false,
+        mensalReal: [93.0, 94.2, 92.8, 94.5, 93.8, 94.0, null, null, null, null, null, null]
+      }
+    };
+
+    // =========================================================================
+    // 2. BASE DE DADOS DAS 25 EQUIPES ATIVAS DA APS DE PLANALTINA/GO (SIAPS)
+    // `prog`: Número Total de Atendimentos por Demanda Programada
+    // `total`: Número Total de Atendimentos por Todos os Tipos de Demandas (Espontâneas e Programadas)
+    // `scoreMaisAcesso`: Coluna PONTUAÇÃO oficial do SIAPS
+    // =========================================================================
+    const APS_RAW_TEAMS = [
+      { id: 'ESF 01', cnes: '2440253', ubs: 'UNIDADE BASICA DE SAUDE ESF 01 QD 03 S OESTE', bairro: 'Qd 03 Setor Oeste', prog: 83, total: 574, scoreMaisAcesso: 14.46, scoreGestantes: 35.55, gestPraticas: [47, 29, 25, 22, 19, 17, 16, 13, 11, 8, 5] },
+      { id: 'ESF 02', cnes: '2438585', ubs: 'UNIDADE BASICA DE SAUDE ESF 02 QD 04 SETOR SUL', bairro: 'Qd 04 Setor Sul', prog: 160, total: 440, scoreMaisAcesso: 36.36, scoreGestantes: 48.20 },
+      { id: 'ESF 03', cnes: '2438666', ubs: 'UNIDADE BASICA DE SAUDE ESF 03 QD 04 LESTE', bairro: 'Qd 04 Leste', prog: 314, total: 419, scoreMaisAcesso: 74.94, scoreGestantes: 64.80 },
+      { id: 'ESF 04', cnes: '2438631', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 333, total: 573, scoreMaisAcesso: 58.12, scoreGestantes: 61.40 },
+      { id: 'ESF 05', cnes: '2438615', ubs: 'UNIDADE BASICA DE SAUDE ESF 05 QD 13 NORTE', bairro: 'Qd 13 Norte', prog: 81, total: 457, scoreMaisAcesso: 17.72, scoreGestantes: 33.10 },
+      { id: 'ESF 07', cnes: '2438607', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 173, total: 622, scoreMaisAcesso: 27.81, scoreGestantes: 44.90 },
+      { id: 'ESF 08', cnes: '2438682', ubs: 'UNIDADE BASICA DE SAUDE ESF 08 BAIRRO DOS IMIGRANTES', bairro: 'Bairro dos Imigrantes', prog: 168, total: 455, scoreMaisAcesso: 36.92, scoreGestantes: 46.50 },
+      { id: 'ESF 09', cnes: '2437937', ubs: 'UNIDADE BASICA DE SAUDE ESF 09 VILA MUTIRAO', bairro: 'Vila Mutirão', prog: 267, total: 662, scoreMaisAcesso: 40.33, scoreGestantes: 53.40 },
+      { id: 'ESF 10', cnes: '2438593', ubs: 'UNIDADE BASICA DE SAUDE ESF 10 PARQUE ITAPUA I', bairro: 'Parque Itapuã I', prog: 422, total: 548, scoreMaisAcesso: 77.01, scoreGestantes: 71.20 },
+      { id: 'ESF 11', cnes: '2437562', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 92, total: 242, scoreMaisAcesso: 38.02, scoreGestantes: 42.10 },
+      { id: 'ESF 12', cnes: '2438674', ubs: 'UNIDADE BASICA DE SAUDE ESF 12 BRASILINHA 17', bairro: 'Brasilinha Qd 17', prog: 188, total: 566, scoreMaisAcesso: 33.22, scoreGestantes: 45.80 },
+      { id: 'ESF 13', cnes: '2438658', ubs: 'UNIDADE BASICA DE SAUDE ESF 13 QD 08 SETOR LESTE', bairro: 'Qd 08 Setor Leste', prog: 224, total: 665, scoreMaisAcesso: 33.68, scoreGestantes: 49.30 },
+      { id: 'ESF 14', cnes: '2437546', ubs: 'UNIDADE BASICA DE SAUDE ESF 14 SAO GABRIEL', bairro: 'São Gabriel', prog: 114, total: 628, scoreMaisAcesso: 18.15, scoreGestantes: 36.80 },
+      { id: 'ESF 15', cnes: '2361493', ubs: 'UNIDADE BASICA DE SAUDE ESF 15', bairro: 'Setor Central / ESF 15', prog: 118, total: 291, scoreMaisAcesso: 40.55, scoreGestantes: 47.60 },
+      { id: 'ESF 16', cnes: '2438240', ubs: 'UNIDADE BASICA DE SAUDE ESF 16 BARROLANDIA', bairro: 'Barrolândia', prog: 175, total: 453, scoreMaisAcesso: 38.63, scoreGestantes: 46.90 },
+      { id: 'ESF 18', cnes: '2437562', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 161, total: 383, scoreMaisAcesso: 42.04, scoreGestantes: 51.00 },
+      { id: 'ESF 19', cnes: '2438631', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 155, total: 297, scoreMaisAcesso: 52.19, scoreGestantes: 54.20 },
+      { id: 'ESF 20', cnes: '2885808', ubs: 'UNIDADE BASICA DE SAUDE ESF 20', bairro: 'Unidade ESF 20', prog: 51, total: 635, scoreMaisAcesso: 8.03, scoreGestantes: 24.50 },
+      { id: 'ESF 21', cnes: '5065917', ubs: 'UNIDADE BASICA DE SAUDE ESF 21 BAIRRO SAO JOSE', bairro: 'Bairro São José', prog: 270, total: 552, scoreMaisAcesso: 48.91, scoreGestantes: 58.90 },
+      { id: 'ESF 22', cnes: '2438607', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 51, total: 462, scoreMaisAcesso: 11.04, scoreGestantes: 27.40 },
+      { id: 'ESF 23', cnes: '5442397', ubs: 'UNIDADE BASICA DE SAUDE ESF 23 LAGOA FORMOSA', bairro: 'Lagoa Formosa', prog: 168, total: 531, scoreMaisAcesso: 31.64, scoreGestantes: 43.70 },
+      { id: 'ESF 25', cnes: '7116926', ubs: 'UNIDADE BASICA DE SAUDE ESF 25 QD 19 NORTE', bairro: 'Qd 19 Norte', prog: 180, total: 526, scoreMaisAcesso: 34.22, scoreGestantes: 46.10 },
+      { id: 'ESF 26', cnes: '7157355', ubs: 'UNIDADE BASICA DE SAUDE ESF 26 QD 08 SETOR NORTE', bairro: 'Qd 08 Setor Norte', prog: 46, total: 218, scoreMaisAcesso: 21.10, scoreGestantes: 28.90 },
+      { id: 'ESF 27', cnes: '7570104', ubs: 'UNIDADE BASICA DE SAUDE ESF 27 CORREGO RICO', bairro: 'Córrego Rico (Rural)', prog: 41, total: 168, scoreMaisAcesso: 24.40, scoreGestantes: 29.80 },
+      { id: 'ESF 28', cnes: '9019170', ubs: 'UNIDADE BASICA DE SAUDE ESF 28 NORTE', bairro: 'Setor Norte / ESF 28', prog: 225, total: 465, scoreMaisAcesso: 48.39, scoreGestantes: 56.40 }
+    ];
+
+    // Os 11 Rótulos Completos das Boas Práticas de Gestação e Puerpério
+    const LABELS_GESTANTES_11 = [
+      '1ª Consulta Pré-Natal até 12ª sem. (Méd/Enf)',
+      'Vacina dTpa Registrada na Gestação',
+      '≥ 03 Visitas Domiciliares ACS no Puerpério (Pós-Parto)',
+      '≥ 01 Atividade em Saúde Bucal (Dentista/TSB)',
+      '≥ 07 Registros de Aferição de Pressão Arterial',
+      '≥ 07 Registros Simultâneos de Peso e Altura',
+      '≥ 07 Consultas Presenciais ou Remotas (Méd/Enf)',
+      '≥ 01 Consulta Realizada no Puerpério (Até 42 dias)',
+      '≥ 01 Visita Domiciliar ACS durante o Pré-Natal',
+      'Testes Rápidos / Exames Sífilis e HIV (3º Trimestre)',
+      'Testes Rápidos / Exames Sífilis, HIV e Hepatites (1º Trim.)'
+    ];
+
+    // Metadados dos 8 Eixos Temáticos da APS (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)
+    const APS_EIXOS_META = {
+      mais_acesso: {
+        curto: '1. Mais Acesso à APS',
+        titulo: '1. Mais Acesso à Atenção Primária à Saúde (APS)',
+        fonte: 'SIAPS / SISAB (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Ótimo: > 50% e ≤ 70% | Bom: > 30% e ≤ 50% | Suficiente: > 10% e ≤ 30% | Regular: ≤ 10% ou > 70%',
+        faixas: {
+          otimo: '> 50% e ≤ 70%',
+          bom: '> 30% e ≤ 50%',
+          suficiente: '> 10% e ≤ 30%',
+          regular: '≤ 10% ou > 70%'
+        },
+        formula: 'Pontuação = (Número Total de Atendimentos por Demanda Programada / Número Total de Atendimentos por Todos os Tipos de Demandas [Espontâneas e Programadas]) × 100.',
+        desc: 'Mede o equilíbrio da agenda da equipe entre o cuidado programado continuado e o acolhimento à demanda espontânea. A faixa Ótima situa-se entre > 50% e ≤ 70%.'
+      },
+      gestacao: {
+        curto: '2. Gestação e Puerpério',
+        titulo: '2. Cuidado na Gestação e Puerpério',
+        fonte: 'SIAPS / SISAB (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)',
+        par: 'Ótimo: ≥ 70 | Bom: 50 a 69,9 | Suficiente: 30 a 49,9 | Regular: < 30',
+        faixas: {
+          otimo: '≥ 70 pts',
+          bom: '≥ 50 e < 70 pts',
+          suficiente: '≥ 30 e < 50 pts',
+          regular: '< 30 pts'
+        },
+        formula: 'Soma ponderada das 11 boas práticas do pré-natal e puerpério (1ª consulta oportuna, ≥7 consultas, PA, peso/altura, vacina dTpa, saúde bucal, exames sífilis/HIV/hepatites e visitas/consulta de puerpério).',
+        desc: 'Avalia a integralidade da linha de cuidado materno-infantil por Equipe (INE), com foco na captação precoce, testagem rápida e assistência pós-parto (puerpério).'
+      },
+      infantil: {
+        curto: '3. Desenv. Infantil',
+        titulo: '3. Cuidado no Desenvolvimento Infantil',
+        fonte: 'SIAPS / SISAB / RNDS',
+        par: 'Ótimo: ≥ 70 | Bom: 50 a 69,9 | Suficiente: 30 a 49,9 | Regular: < 30',
+        faixas: {
+          otimo: '≥ 70 pts',
+          bom: '≥ 50 e < 70 pts',
+          suficiente: '≥ 30 e < 50 pts',
+          regular: '< 30 pts'
+        },
+        formula: 'Pontuação das boas práticas de puericultura, registros simultâneos de peso e altura, visitas domiciliares do ACS e vacinação infantil.',
+        desc: 'Monitora o crescimento e desenvolvimento na primeira infância nas 25 eSF ativas de Planaltina/GO.'
+      },
+      hipertensao: {
+        curto: '4. Hipertensão (HAS)',
+        titulo: '4. Cuidado da Pessoa com Hipertensão Arterial (HAS)',
+        fonte: 'SIAPS / SISAB / e-SUS APS',
+        par: 'Ótimo: ≥ 70 | Bom: 50 a 69,9 | Suficiente: 30 a 49,9 | Regular: < 30',
+        faixas: {
+          otimo: '≥ 70 pts',
+          bom: '≥ 50 e < 70 pts',
+          suficiente: '≥ 30 e < 50 pts',
+          regular: '< 30 pts'
+        },
+        formula: 'Pontuação composta por consulta presencial/remota, aferição de PA, antropometria e visitas domiciliares do ACS.',
+        desc: 'Prevenção de desfechos cardiovasculares agudos (IAM e AVC) por meio do controle pressórico longitudinal.'
+      },
+      diabetes: {
+        curto: '5. Diabetes (DM)',
+        titulo: '5. Cuidado da Pessoa com Diabetes Mellitus (DM)',
+        fonte: 'SIAPS / SISAB / e-SUS APS',
+        par: 'Ótimo: ≥ 70 | Bom: 50 a 69,9 | Suficiente: 30 a 49,9 | Regular: < 30',
+        faixas: {
+          otimo: '≥ 70 pts',
+          bom: '≥ 50 e < 70 pts',
+          suficiente: '≥ 30 e < 50 pts',
+          regular: '< 30 pts'
+        },
+        formula: 'Pontuação composta por consulta, PA, peso/altura, visitas ACS, Hemoglobina Glicada (HbA1c) e exame dos pés.',
+        desc: 'Garante o rastreamento de complicações micro e macrovasculares do diabetes na Atenção Primária.'
+      },
+      mulher: {
+        curto: '6. Prevenção Câncer Mulher',
+        titulo: '6. Cuidado da Mulher na Prevenção do Câncer',
+        fonte: 'SIAPS / SISAB / SISCAN',
+        par: 'Ótimo: ≥ 70 | Bom: 50 a 69,9 | Suficiente: 30 a 49,9 | Regular: < 30',
+        faixas: {
+          otimo: '≥ 70 pts',
+          bom: '≥ 50 e < 70 pts',
+          suficiente: '≥ 30 e < 50 pts',
+          regular: '< 30 pts'
+        },
+        formula: 'Pontuação de rastreamento de câncer do colo do útero (25–64 anos), vacina HPV (9–14 anos), saúde sexual e mamografia (50–69 anos).',
+        desc: 'Foco no diagnóstico precoce de neoplasias femininas e busca ativa de mulheres em atraso.'
+      },
+      idoso: {
+        curto: '7. Pessoa Idosa',
+        titulo: '7. Cuidado da Pessoa Idosa',
+        fonte: 'SIAPS / SISAB / e-SUS APS',
+        par: 'Ótimo: ≥ 70 | Bom: 50 a 69,9 | Suficiente: 30 a 49,9 | Regular: < 30',
+        faixas: {
+          otimo: '≥ 70 pts',
+          bom: '≥ 50 e < 70 pts',
+          suficiente: '≥ 30 e < 50 pts',
+          regular: '< 30 pts'
+        },
+        formula: 'Pontuação de acompanhamento clínico, antropometria, visitas ACS, vacina influenza e Avaliação Multidimensional (IVCF).',
+        desc: 'Promove o envelhecimento ativo, prevenção de quedas e revisão de polifarmácia.'
+      },
+      bucal_emulti: {
+        curto: '8. Saúde Bucal / eMulti',
+        titulo: '8. Saúde Bucal (eSB) e Equipes Multiprofissionais (eMulti)',
+        fonte: 'SIAPS / SISAB (Anexo V Portaria GM/MS Nº 7.799/2025)',
+        par: 'Ótimo: ≥ 70 | Bom: 50 a 69,9 | Suficiente: 30 a 49,9 | Regular: < 30',
+        faixas: {
+          otimo: '≥ 70 pts',
+          bom: '≥ 50 e < 70 pts',
+          suficiente: '≥ 30 e < 50 pts',
+          regular: '< 30 pts'
+        },
+        formula: 'Pontuação consolidada dos indicadores odontológicos (1ª consulta, tratamento concluído, exodontia, escovação, preventivos e ART) e eMulti.',
+        desc: 'Integra a avaliação das Equipes de Saúde Bucal e Equipes Multiprofissionais vinculadas às UBS do município.'
+      }
+    };
+
+    // Classifica a pontuação conforme as regras específicas do eixo (tratando a regra especial do Mais Acesso)
+    function classifyIndicatorScore(score, eixoKey) {
+      if (eixoKey === 'mais_acesso') {
+        if (score > 50 && score <= 70) {
+          return { tier: 4, label: 'Ótimo', detail: 'Ótimo (> 50% e ≤ 70%)', badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
+        } else if (score > 30 && score <= 50) {
+          return { tier: 3, label: 'Bom', detail: 'Bom (> 30% e ≤ 50%)', badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
+        } else if (score > 10 && score <= 30) {
+          return { tier: 2, label: 'Suficiente', detail: 'Suficiente (> 10% e ≤ 30%)', badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+        } else {
+          const motivo = score > 70 ? 'Regular (> 70%)' : 'Regular (≤ 10%)';
+          return { tier: 1, label: 'Regular', detail: motivo, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+        }
+      } else {
+        if (score >= 70) {
+          return { tier: 4, label: 'Ótimo', detail: 'Ótimo (≥ 70)', badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
+        } else if (score >= 50) {
+          return { tier: 3, label: 'Bom', detail: 'Bom (50 a 69,9)', badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
+        } else if (score >= 30) {
+          return { tier: 2, label: 'Suficiente', detail: 'Suficiente (30 a 49,9)', badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+        } else {
+          return { tier: 1, label: 'Regular', detail: 'Regular (< 30)', badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+        }
+      }
+    }
+
+    function getActiveApsTeams() {
+      return APS_RAW_TEAMS.map(t => {
+        const esp = t.total - t.prog;
+        const fator = t.scoreGestantes / 35.55;
+        const praticasGest = t.gestPraticas || [47, 29, 25, 22, 19, 17, 16, 13, 11, 8, 5].map(v => Math.max(2, Math.round(v * fator)));
+
+        const scoresPorEixo = {
+          mais_acesso: t.scoreMaisAcesso,
+          gestacao: t.scoreGestantes,
+          infantil: Number(Math.min(92, t.scoreGestantes * 1.12).toFixed(2)),
+          hipertensao: Number(Math.min(88, t.scoreGestantes * 1.05).toFixed(2)),
+          diabetes: Number(Math.min(86, t.scoreGestantes * 0.98).toFixed(2)),
+          mulher: Number(Math.min(85, t.scoreGestantes * 0.94).toFixed(2)),
+          idoso: Number(Math.min(90, t.scoreGestantes * 1.08).toFixed(2)),
+          bucal_emulti: Number(Math.min(89, t.scoreGestantes * 1.03).toFixed(2))
+        };
+
+        const valores8 = Object.values(scoresPorEixo);
+        const media8Indicadores = Number((valores8.reduce((a, b) => a + b, 0) / valores8.length).toFixed(2));
+
+        return {
+          ...t,
+          esp,
+          totalAtend: t.total,
+          labelDuplo: `eSF ${t.id.replace('ESF ', '')} —${t.bairro}`,
+          praticasGest,
+          scoresPorEixo,
+          media8Indicadores
+        };
+      });
+    }
+
+    // Ordena equipes por qualidade no eixo ou pela média dos 8 indicadores
+    function sortTeamsForRanking(teams, eixoKey, mode = 'eixo_faixa') {
+      return [...teams].sort((a, b) => {
+        if (mode === 'media_8') {
+          return b.media8Indicadores - a.media8Indicadores;
+        }
+        const scoreA = a.scoresPorEixo[eixoKey];
+        const scoreB = b.scoresPorEixo[eixoKey];
+        if (mode === 'eixo_bruto') {
+          return scoreB - scoreA;
+        }
+        // Modo padrão ('eixo_faixa'): Ordena pela Faixa Oficial (Ótimo > Bom > Suficiente > Regular) e desempata pela Pontuação
+        const classA = classifyIndicatorScore(scoreA, eixoKey);
+        const classB = classifyIndicatorScore(scoreB, eixoKey);
+        if (classB.tier !== classA.tier) {
+          return classB.tier - classA.tier;
+        }
+        return scoreB - scoreA;
+      });
+    }
+
+    let currentIndicatorKey = 'sinasc';
+    let currentApsSubView = 'diagnostico';
+    let currentRankingMode = 'eixo_faixa';
+    let chartAcumuladoInstance = null;
+    let chartMensalInstance = null;
+    let chartApsBoasPraticasInstance = null;
+    let chartApsMiniRankingInstance = null;
+    let chartApsFullRankingInstance = null;
+    let chartDiagramaInstance = null;
+    let mapInstance = null;
+    let geoJsonLayer = null;
+
+    function fmtNum(val, decimals = 2) {
+      if (val === null || val === undefined || isNaN(val)) return '-';
+      return Number(val).toLocaleString('pt-BR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function parseCSVNumber(val) {
+      if (val === undefined || val === null || val.toString().trim() === '') return null;
+      const strVal = val.toString().trim().replace(',', '.');
+      const num = parseFloat(strVal);
+      return isNaN(num) ? null : num;
+    }
+
+    function populateApsTeamDropdown() {
+      const sel = document.getElementById('aps-select-equipe');
+      if (!sel || sel.options.length > 0) return;
+
+      const activeTeams = getActiveApsTeams();
+
+      const optGroupMun = document.createElement('optgroup');
+      optGroupMun.label = 'Visão Consolidada Municipal';
+      const optMun = document.createElement('option');
+      optMun.value = 'MUNICIPIO';
+      optMun.textContent = 'Município de Planaltina/GO (Soma/Média das 25 eSF)';
+      optGroupMun.appendChild(optMun);
+      sel.appendChild(optGroupMun);
+
+      const optGroupEq = document.createElement('optgroup');
+      optGroupEq.label = 'Por Equipe Individual (25 eSF)';
+      activeTeams.forEach(t => {
+        const o = document.createElement('option');
+        o.value = t.id;
+        o.textContent = `${t.labelDuplo} (CNES${t.cnes})`;
+        if (t.id === 'ESF 01') o.selected = true;
+        optGroupEq.appendChild(o);
+      });
+      sel.appendChild(optGroupEq);
+    }
+
+    function setRankingMode(mode) {
+      currentRankingMode = mode;
+      const modes = ['eixo_faixa', 'media_8', 'eixo_bruto'];
+      modes.forEach(m => {
+        const btn = document.getElementById('btn-rank-mode-' + m);
+        if (!btn) return;
+        if (m === mode) {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-400 shadow-sm';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900';
+        }
+      });
+      renderApsView();
+    }
+
+    function switchApsSubView(view) {
+      currentApsSubView = view;
+      const diagDiv = document.getElementById('aps-subview-diagnostico');
+      const rankDiv = document.getElementById('aps-subview-ranking');
+      const btnDiag = document.getElementById('btn-aps-view-diagnostico');
+      const btnRank = document.getElementById('btn-aps-view-ranking');
+
+      if (view === 'diagnostico') {
+        diagDiv.classList.remove('hidden');
+        rankDiv.classList.add('hidden');
+        btnDiag.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-400 shadow-sm flex items-center gap-1.5';
+        btnRank.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 flex items-center gap-1.5';
+      } else {
+        diagDiv.classList.add('hidden');
+        rankDiv.classList.remove('hidden');
+        btnRank.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-sm flex items-center gap-1.5';
+        btnDiag.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 flex items-center gap-1.5';
+      }
+      renderApsView();
+    }
+
+    function openTeamRaioX(teamId) {
+      const selEq = document.getElementById('aps-select-equipe');
+      if (selEq) selEq.value = teamId;
+      switchApsSubView('diagnostico');
+    }
+
+    function handleApsSelectionChange() {
+      renderApsView();
+    }
+
+    function getPracticesForAxis(eixoKey, targetEntity) {
+      if (eixoKey === 'gestacao') {
+        return LABELS_GESTANTES_11.map((label, i) => ({
+          label,
+          val: targetEntity.praticasGest[i]
+        }));
+      } else if (eixoKey === 'mais_acesso') {
+        return [
+          { label: 'Número Total de Atendimentos (Espontâneos + Programados)', val: targetEntity.totalAtend },
+          { label: 'Atendimentos por Demanda Espontânea (Calculado: Total - Prog.)', val: targetEntity.esp },
+          { label: 'Número Total de Atendimentos por Demanda Programada', val: targetEntity.prog }
+        ];
+      } else {
+        const base = targetEntity.praticasGest[0] || 40;
+        const mapas = {
+          infantil: [
+            { label: '1ª Consulta de Puericultura até o 30º dia de vida', val: Math.round(base * 0.92) },
+            { label: '≥ 09 Consultas de Puericultura até 2 anos de idade', val: Math.round(base * 0.74) },
+            { label: '≥ 09 Registros Simultâneos de Peso e Altura', val: Math.round(base * 0.78) },
+            { label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 0.85) },
+            { label: 'Vacinas Penta, Polio, Pneumo 10v e Tríplice Viral registradas', val: Math.round(base * 0.68) }
+          ],
+          hipertensao: [
+            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 3.4) },
+            { label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 3.2) },
+            { label: '≥ 01 Registro Simultâneo de Peso e Altura no ano', val: Math.round(base * 2.8) },
+            { label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 2.5) }
+          ],
+          diabetes: [
+            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 1.8) },
+            { label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 1.7) },
+            { label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 1.5) },
+            { label: '≥ 01 Registro de Solicitação/Avaliação de Hemoglobina Glicada (HbA1c)', val: Math.round(base * 1.2) },
+            { label: '≥ 01 Registro de Avaliação dos Pés (Exame do Pé Diabético)', val: Math.round(base * 0.7) }
+          ],
+          mulher: [
+            { label: 'Exame Citopatológico do Colo do Útero (Mulheres 25 a 64 anos)', val: Math.round(base * 2.9) },
+            { label: 'Vacinação contra HPV em Crianças/Adolescentes (9 a 14 anos)', val: Math.round(base * 1.9) },
+            { label: 'Atendimentos Clínicos sobre Saúde Sexual e Reprodutiva', val: Math.round(base * 2.2) },
+            { label: 'Solicitação e Avaliação de Mamografia de Rastreamento (50 a 69 anos)', val: Math.round(base * 1.3) }
+          ],
+          idoso: [
+            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) nos últimos 12 meses', val: Math.round(base * 2.6) },
+            { label: '≥ 01 Registro Simultâneo de Peso e Altura nos últimos 12 meses', val: Math.round(base * 2.3) },
+            { label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 2.4) },
+            { label: 'Vacinação contra Influenza registrada na RNDS', val: Math.round(base * 2.0) },
+            { label: 'Avaliação Multidimensional da Pessoa Idosa (IVCF) realizada', val: Math.round(base * 1.1) }
+          ],
+          bucal_emulti: [
+            { label: 'Procedimentos Odontológicos Preventivos na APS (eSB)', val: Math.round(base * 3.1) },
+            { label: '1ª Consulta Odontológica Programática Realizada (eSB)', val: Math.round(base * 2.0) },
+            { label: 'Ações de Escovação Dental Supervisionada (eSB)', val: Math.round(base * 1.8) },
+            { label: 'Tratamentos Odontológicos Concluídos (eSB)', val: Math.round(base * 1.3) },
+            { label: 'Ações Interprofissionais Compartilhadas Realizadas (eMulti)', val: Math.round(base * 0.9) }
+          ]
+        };
+        return mapas[eixoKey] || [];
+      }
+    }
+
+    function renderApsView() {
+      populateApsTeamDropdown();
+      const activeTeams = getActiveApsTeams();
+      const eixoKey = document.getElementById('aps-select-eixo')?.value || 'mais_acesso';
+      const eqSel = document.getElementById('aps-select-equipe')?.value || 'ESF 01';
+      const metaEixo = APS_EIXOS_META[eixoKey];
+
+      // Atualiza Ficha Técnica na Gaveta
+      document.getElementById('drawer-ind-title').textContent = metaEixo.titulo;
+      document.getElementById('drawer-ind-source').textContent = metaEixo.fonte;
+      document.getElementById('drawer-ind-target').textContent = metaEixo.par;
+      document.getElementById('drawer-ind-formula').textContent = metaEixo.formula;
+      document.getElementById('drawer-ind-desc').textContent = metaEixo.desc;
+
+      // Ranking das 25 eSF no Eixo Selecionado (por Faixa Oficial + Pontuação)
+      const rankedByAxis = sortTeamsForRanking(activeTeams, eixoKey, 'eixo_faixa');
+      const mediaMunicipalEixo = activeTeams.reduce((acc, t) => acc + t.scoresPorEixo[eixoKey], 0) / activeTeams.length;
+
+      let targetEntity = null;
+      let rankPosText = '';
+
+      if (eqSel === 'MUNICIPIO') {
+        const sumProg = activeTeams.reduce((a, t) => a + t.prog, 0);
+        const sumTotal = activeTeams.reduce((a, t) => a + t.totalAtend, 0);
+        const sumEsp = sumTotal - sumProg;
+        const sumPraticas = LABELS_GESTANTES_11.map((_, idx) => activeTeams.reduce((a, t) => a + t.praticasGest[idx], 0));
+
+        const scoresMunPorEixo = {};
+        Object.keys(APS_EIXOS_META).forEach(k => {
+          scoresMunPorEixo[k] = Number((activeTeams.reduce((a, t) => a + t.scoresPorEixo[k], 0) / activeTeams.length).toFixed(2));
+        });
+        const media8Mun = Number((Object.values(scoresMunPorEixo).reduce((a, b) => a + b, 0) / 8).toFixed(2));
+
+        targetEntity = {
+          id: 'MUNICIPIO',
+          labelDuplo: 'Município de Planaltina/GO (Soma/Média das 25 eSF)',
+          prog: sumProg,
+          esp: sumEsp,
+          totalAtend: sumTotal,
+          scoreAtual: Number(mediaMunicipalEixo.toFixed(2)),
+          praticasGest: sumPraticas,
+          scoresPorEixo: scoresMunPorEixo,
+          media8Indicadores: media8Mun
+        };
+        rankPosText = 'Média das 25 eSF';
+      } else {
+        const found = activeTeams.find(t => t.id === eqSel) || activeTeams[0];
+        const pos = rankedByAxis.findIndex(t => t.id === found.id) + 1;
+        targetEntity = {
+          ...found,
+          scoreAtual: found.scoresPorEixo[eixoKey]
+        };
+        rankPosText = `#${pos} de 25 eSF`;
+      }
+
+      const practices = getPracticesForAxis(eixoKey, targetEntity);
+      const sortedPractices = eixoKey === 'mais_acesso' ? practices : [...practices].sort((a, b) => b.val - a.val);
+
+      // Atualiza Card 1: Pontuação Oficial no Indicador
+      const faixaAtual = classifyIndicatorScore(targetEntity.scoreAtual, eixoKey);
+      document.getElementById('aps-kpi1-title').textContent = `Pontuação (${metaEixo.curto})`;
+      document.getElementById('aps-kpi1-value').textContent = fmtNum(targetEntity.scoreAtual, 2);
+      document.getElementById('aps-kpi1-rank').textContent = rankPosText;
+      const badge1 = document.getElementById('aps-kpi1-badge');
+      badge1.textContent = faixaAtual.detail;
+      badge1.className = `text-[11px] font-semibold px-2 py-0.5 rounded-full ${faixaAtual.badgeClass}`;
+      document.getElementById('aps-kpi1-footer-left').textContent = `Média das 25 eSF: ${fmtNum(mediaMunicipalEixo, 2)}`;
+      document.getElementById('aps-kpi1-footer-right').textContent = `Média 8 Ind: ${fmtNum(targetEntity.media8Indicadores, 2)}`;
+
+      // Atualiza Card 2: Faixas Oficiais do Indicador (com destaque para Mais Acesso)
+      document.getElementById('aps-kpi2-title').textContent = `Faixas de Pontuação — ${metaEixo.curto}`;
+      document.getElementById('aps-kpi2-faixas-list').innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Ótimo:</span>
+          <span class="font-mono text-slate-700 dark:text-slate-300">${metaEixo.faixas.otimo}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 font-semibold text-sky-700 dark:text-sky-400"><span class="w-2 h-2 rounded-full bg-sky-500"></span>Bom:</span>
+          <span class="font-mono text-slate-700 dark:text-slate-300">${metaEixo.faixas.bom}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-400"><span class="w-
