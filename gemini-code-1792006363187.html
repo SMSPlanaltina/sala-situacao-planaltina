@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sala de Situação em Saúde — Planaltina/GO</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Leaflet CSS & JS (Mapas Vetoriais / GeoJSON do QGIS) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    #map-container {
+      height: 540px;
+      width: 100%;
+      border-radius: 0.75rem;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
+
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR (NÍVEL 1 DE NAVEGAÇÃO) -->
+    <aside id="sidebar" class="w-64 flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-200 z-30">
+      <div>
+        <!-- Logo / Cabeçalho Institucional -->
+        <div class="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-lg bg-sky-600 flex items-center justify-center text-white shadow-sm">
+            <i data-lucide="activity" class="w-5 h-5"></i>
+          </div>
+          <div class="leading-tight">
+            <h1 class="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Sala de Situação</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SMS • Planaltina/GO</p>
+          </div>
+        </div>
+
+        <!-- Menu Principal -->
+        <div class="p-3 space-y-1">
+          <p class="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Módulos Analíticos</p>
+
+          <button onclick="switchMainTab('visao-geral')" id="nav-visao-geral" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Visão Executiva</span>
+            </div>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Geral</span>
+          </button>
+
+          <button onclick="switchMainTab('pqavs')" id="nav-pqavs" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400">
+            <div class="flex items-center gap-3">
+              <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Vigilância (PQA-VS)</span>
+            </div>
+            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">14</span>
+          </button>
+
+          <button onclick="switchMainTab('aps')" id="nav-aps" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="heart-pulse" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Atenção Primária (APS)</span>
+            </div>
+            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">25 eSF</span>
+          </button>
+
+          <button onclick="switchMainTab('proprios')" id="nav-proprios" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="flame" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Indicadores Próprios</span>
+            </div>
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          </button>
+
+          <button onclick="switchMainTab('mapas')" id="nav-mapas" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-3">
+              <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i>
+              <span>Inteligência Geográfica</span>
+            </div>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">QGIS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Rodapé da Sidebar: Status da Planilha Google Sheets -->
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+        <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Fonte de Dados</span>
+            <span id="sync-badge" class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+            </span>
+          </div>
+          <p id="data-source-label" class="text-xs text-slate-600 dark:text-slate-300 truncate">Google Sheets / SISAB</p>
+          <button onclick="openSheetsModal()" class="mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+            Conectar Google Sheets
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- TOPBAR FIXA (FILTROS GLOBAIS & AÇÕES) -->
+      <header class="h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between z-20">
+        <div class="flex items-center gap-3">
+          <h2 id="page-title" class="text-base font-semibold text-slate-900 dark:text-white">
+            Vigilância em Saúde (PQA-VS)
+          </h2>
+          <span class="hidden sm:inline-block text-slate-300 dark:text-slate-700">|</span>
+          <span id="page-subtitle" class="hidden sm:inline-block text-xs text-slate-500 dark:text-slate-400">
+            Portaria GM/MS Nº 6.878/2025 • 14 Indicadores Pactuados
+          </span>
+        </div>
+
+        <!-- Controles e Filtros Globais -->
+        <div class="flex items-center gap-2.5">
+          <!-- Filtro Ano -->
+          <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-2.5 py-1.5 border border-slate-200 dark:border-slate-700">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-500 mr-1.5"></i>
+            <label for="filter-year" class="text-xs text-slate-500 dark:text-slate-400 mr-1.5">Ano:</label>
+            <select id="filter-year" onchange="renderPqavs(currentIndicatorKey)" class="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+
+          <!-- Modo de Exibição dos Gráficos PQA-VS -->
+          <div id="top-chart-mode-wrapper" class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-2.5 py-1.5 border border-slate-200 dark:border-slate-700">
+            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-slate-500 mr-1.5"></i>
+            <select id="filter-chart-mode" onchange="renderPqavs(currentIndicatorKey)" class="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer">
+              <option value="adaptive" selected>Gráficos: Até Último Mês Registrado</option>
+              <option value="full">Gráficos: Ano Inteiro (Jan - Dez)</option>
+            </select>
+          </div>
+
+          <!-- Botão Ficha Técnica -->
+          <button onclick="toggleDrawer(true)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:hover:bg-sky-900 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/60 flex items-center gap-1.5 transition" title="Ver Ficha de Qualificação do Indicador">
+            <i data-lucide="info" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Ficha Técnica</span>
+          </button>
+
+          <!-- Botão Dark Mode -->
+          <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="Alternar Modo Escuro (Gabinete de Crise)">
+            <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTEÚDO ROLÁVEL -->
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+        <!-- ==========================================
+             ABA 1: VIGILÂNCIA EM SAÚDE (PQA-VS - 14 INDICADORES)
+             ========================================== -->
+        <section id="tab-pqavs" class="space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Selecione o Indicador PQA-VS (Portaria GM/MS Nº 6.878/2025):</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span id="top-meta-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-medium border border-emerald-200 dark:border-emerald-800/60">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                  Meta Atingida
+                </span>
+              </div>
+            </div>
+            <div id="pqavs-subtabs-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1.5"></div>
+          </div>
+
+          <!-- BENTO GRID: 4 KPI CARDS PQA-VS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span id="card1-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Meta Anual Pactuada</span>
+                <span class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  <i data-lucide="target" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-3">
+                <div id="kpi-meta-anual" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">952</div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span id="card1-footer-left">Pactuação 2026</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-300">Ministério da Saúde</span>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span id="card2-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Meta Mensal Estimada</span>
+                <span class="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
+                  <i data-lucide="calendar-range" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-3">
+                <div id="kpi-meta-mensal" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">79,33</div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span id="card2-footer-left">Média linear (12 meses)</span>
+                <span id="card2-footer-right" class="font-mono text-sky-600 dark:text-sky-400">Meta/mês</span>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span id="card3-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Registros Acumulados</span>
+                <span class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                  <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-2.5 flex items-baseline gap-2">
+                <div id="kpi-acumulado" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">742</div>
+                <span id="kpi-perc-anual" class="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400">(77,9% do ano)</span>
+              </div>
+              <div class="space-y-2">
+                <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div id="kpi-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 77.9%"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="kpi-esperado-label">Esperado até Junho:</span>
+                  <strong id="kpi-esperado-valor" class="font-mono text-slate-700 dark:text-slate-300">475,98</strong>
+                </div>
+              </div>
+            </div>
+
+            <div id="kpi-saldo-card" class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-emerald-200/90 dark:border-emerald-900/60 shadow-sm flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <span id="card4-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Saldo de Registros (vs. Meta)</span>
+                <span id="kpi-saldo-icon" class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="my-3 flex items-baseline gap-2">
+                <div id="kpi-saldo" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">+266,02</div>
+                <span id="kpi-saldo-tag" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Superávit</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span id="kpi-performance-periodo">155,9% da meta até Jun</span>
+                <span id="kpi-status-meta" class="text-emerald-600 dark:text-emerald-400 font-semibold">Dentro da meta</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BENTO GRID: GRÁFICOS PRINCIPAIS PQA-VS -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 id="chart1-title" class="text-sm font-semibold text-slate-900 dark:text-white">Registros Acumulados vs. Meta Acumulada por Mês</h3>
+                  <p id="chart1-subtitle" class="text-xs text-slate-500 dark:text-slate-400">Evolução progressiva de Janeiro a Junho de 2026</p>
+                </div>
+                <span id="chart1-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Jan - Jun</span>
+              </div>
+              <div class="h-72">
+                <canvas id="chartAcumulado"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 id="chart2-title" class="text-sm font-semibold text-slate-900 dark:text-white">Registros Mensais vs. Meta Mensal por Mês</h3>
+                  <p id="chart2-subtitle" class="text-xs text-slate-500 dark:text-slate-400">Comparativo mensal direto contra a linha de corte (79,33)</p>
+                </div>
+                <span id="chart2-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Jan - Jun</span>
+              </div>
+              <div class="h-72">
+                <canvas id="chartMensal"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABELA PQA-VS -->
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 id="table-title" class="text-sm font-semibold text-slate-900 dark:text-white">Detalhamento Mensal Auditável (2026)</h3>
+                <p id="table-subtitle" class="text-xs text-slate-500 dark:text-slate-400">Alinhamento numérico tabular estrito para inspeção rápida</p>
+              </div>
+              <button onclick="exportCurrentCSV()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                Exportar Planilha Modelo (14 Indicadores)
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-800/40">
+                    <th class="py-3 px-4">Mês</th>
+                    <th id="th-col-mensal" class="py-3 px-4 text-right">Registros Mensais</th>
+                    <th id="th-col-meta-mes" class="py-3 px-4 text-right">Meta Mensal</th>
+                    <th id="th-col-acum" class="py-3 px-4 text-right">Acumulado Real</th>
+                    <th id="th-col-meta-acum" class="py-3 px-4 text-right">Meta Acumulada</th>
+                    <th id="th-col-saldo" class="py-3 px-4 text-right">Saldo Acumulado</th>
+                    <th class="py-3 px-4 text-center">Status Mensal</th>
+                  </tr>
+                </thead>
+                <tbody id="pqavs-table-body" class="divide-y divide-slate-200/60 dark:divide-slate-800 text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 2: VISÃO EXECUTIVA (RESUMO DOS 14 INDICADORES + APS)
+             ========================================== -->
+        <section id="tab-visao-geral" class="hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">PQA-VS (Vigilância)</span>
+                <span id="exec-pqavs-badge" class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">12 / 14 metas</span>
+              </div>
+              <div id="exec-pqavs-perc" class="text-2xl font-bold tabular-nums mb-1">85,7%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Proporção global dos 14 indicadores do PQA-VS (Portaria GM/MS Nº 6.878/2025) dentro da meta.</p>
+            </div>
+
+            <div onclick="switchMainTab('aps')" class="cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 transition shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Atenção Primária (APS)</span>
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">25 eSF em 22 UBS</span>
+              </div>
+              <div class="text-2xl font-bold tabular-nums mb-1">16.092 atend./mês</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Volume mensal consolidado da rede de Atenção Primária (4.260 programados e 11.832 espontâneos).</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">Vigilância de Arboviroses</span>
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Baixa Transmissão</span>
+              </div>
+              <div class="text-2xl font-bold tabular-nums mb-1">IIP: 0,9%</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Índice de Infestação Predial (LIRAa) abaixo do limite de alerta de 1,0% no último ciclo.</p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 class="text-sm font-semibold">Painel Semafórico Rápido — 14 Indicadores do PQA-VS (Planaltina/GO)</h3>
+                <p class="text-xs text-slate-500">Clique em qualquer cartão para abrir a análise detalhada do indicador</p>
+              </div>
+              <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Portaria GM/MS Nº 6.878/2025</span>
+            </div>
+            <div id="exec-semaforo-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5"></div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 3: ATENÇÃO PRIMÁRIA À SAÚDE (APS - PORTARIA GM/MS 3.493/2024 E 7.799/2025)
+             ========================================== -->
+        <section id="tab-aps" class="hidden space-y-6">
+
+          <!-- CABEÇALHO DE GOVERNANÇA APS + SUB-ABAS INTERNAS -->
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/70 dark:border-slate-800 pb-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <button onclick="switchApsSubView('diagnostico')" id="btn-aps-view-diagnostico" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-400 shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="stethoscope" class="w-3.5 h-3.5"></i>
+                    <span>Diagnóstico por Equipe / UBS (Boas Práticas)</span>
+                  </button>
+                  <button onclick="switchApsSubView('ranking')" id="btn-aps-view-ranking" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 flex items-center gap-1.5">
+                    <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-500"></i>
+                    <span>Ranking Geral (25 eSF)</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Resumo Limpo da Rede Ativa -->
+              <div class="flex flex-wrap items-center gap-2 text-[11px]">
+                <span class="px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-medium">
+                  <strong>Rede Ativa:</strong> 25 eSF em 22 UBS
+                </span>
+              </div>
+            </div>
+
+            <!-- BARRA DE COMANDO DUPLA (2 SELETORES SUSPENSOS INTELIGENTES) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
+              <!-- Seletor Suspenso 1: Eixo Temático em Ordem Estrita 1 a 8 -->
+              <div>
+                <label for="aps-select-eixo" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                  1. Eixo Temático — Componente de Qualidade (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)
+                </label>
+                <div class="relative">
+                  <select id="aps-select-eixo" onchange="handleApsSelectionChange()" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
+                    <option value="mais_acesso">1. Mais Acesso à APS (Demanda Programada vs. Espontânea)</option>
+                    <option value="gestacao" selected>2. Cuidado na Gestação e Puerpério (11 Ações / Boas Práticas)</option>
+                    <option value="infantil">3. Cuidado no Desenvolvimento Infantil (Puericultura / Vacinas)</option>
+                    <option value="hipertensao">4. Cuidado da Pessoa com Hipertensão Arterial (Consulta + PA + Antropometria)</option>
+                    <option value="diabetes">5. Cuidado da Pessoa com Diabetes Mellitus (Consulta + PA + HbA1c + Exame dos Pés)</option>
+                    <option value="mulher">6. Cuidado da Mulher na Prevenção do Câncer (Citopatológico / Rastreamento)</option>
+                    <option value="idoso">7. Cuidado da Pessoa Idosa (Avaliação Multidimensional / Visitas ACS)</option>
+                    <option value="bucal_emulti">8. Saúde Bucal (eSB) e Equipes Multiprofissionais (eMulti)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Seletor Suspenso 2: Unidade / Equipe Analisada (Sem Consolidado por Prédio) -->
+              <div id="aps-team-selector-wrapper">
+                <label for="aps-select-equipe" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                  2. Unidade / Equipe Analisada (25 eSF • INE Equipe + UBS)
+                </label>
+                <div class="relative">
+                  <select id="aps-select-equipe" onchange="handleApsSelectionChange()" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
+                    <!-- Preenchido dinamicamente pelo JS -->
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-VIEW APS 1: DIAGNÓSTICO POR EQUIPE / UBS
+               ========================================== -->
+          <div id="aps-subview-diagnostico" class="space-y-6">
+
+            <!-- BLOCO 1: OS 4 CARTÕES DE DIAGNÓSTICO RÁPIDO (BENTO GRID) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Card APS 1: Pontuação / Volume do Eixo -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="aps-kpi1-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Pontuação / Escore do Eixo</span>
+                  <span id="aps-kpi1-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Suficiente</span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                  <div id="aps-kpi1-value" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">35,55</div>
+                  <span id="aps-kpi1-rank" class="text-xs font-mono font-semibold text-sky-600 dark:text-sky-400">#18 de 25 eSF</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="aps-kpi1-footer-left">Média Planaltina: 44,80</span>
+                  <span id="aps-kpi1-footer-right" class="font-mono font-semibold text-slate-700 dark:text-slate-300">Portaria 3.493</span>
+                </div>
+              </div>
+
+              <!-- Card APS 2: Destaque Crítico do Eixo -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="aps-kpi2-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Cuidado no Puerpério (Foco Crítico)</span>
+                  <span class="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
+                    <i data-lucide="baby" class="w-4 h-4"></i>
+                  </span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                  <div id="aps-kpi2-value" class="text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400 tabular-nums">13 / 25</div>
+                  <span id="aps-kpi2-sub" class="text-xs font-mono text-slate-500">Cons. / Vis. ACS</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="aps-kpi2-footer-left">13 Consultas • 25 Visitas ACS pós-parto</span>
+                  <span class="text-sky-600 dark:text-sky-400 font-semibold">Pós-parto</span>
+                </div>
+              </div>
+
+              <!-- Card APS 3: Maior Conformidade (Ponto Forte da Equipe) -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/50 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="aps-kpi3-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Maior Conformidade (Ponto Forte)</span>
+                  <span class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                  </span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                  <div id="aps-kpi3-value" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">47</div>
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Líder na Equipe</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="aps-kpi3-footer" class="truncate font-medium text-slate-700 dark:text-slate-300">1ª Consulta Pré-Natal (Méd/Enf)</span>
+                </div>
+              </div>
+
+              <!-- Card APS 4: Alerta de Captação / Gargalo Prioritário -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="aps-kpi4-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Alerta de Captação / Gargalo</span>
+                  <span class="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400">
+                    <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+                  </span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                  <div id="aps-kpi4-value" class="text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums">5</div>
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">Ação Imediata</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span id="aps-kpi4-footer" class="truncate font-medium text-rose-600 dark:text-rose-400">Testes Rápidos Sífilis/HIV/Hep (1º Trim.)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BLOCO 2: OS 2 GRÁFICOS PRINCIPAIS LADO A LADO -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Gráfico da Esquerda: Checklist de Boas Práticas da Equipe -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 id="aps-chart-left-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                      Desempenho nas Boas Práticas do Eixo — eSF 01 (Qd 03 Setor Oeste)
+                    </h3>
+                    <p id="aps-chart-left-subtitle" class="text-xs text-slate-500 dark:text-slate-400">
+                      Barras horizontais ordenadas com rótulo integral (sem corte de legenda)
+                    </p>
+                  </div>
+                  <span id="aps-chart-left-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300">11 Práticas</span>
+                </div>
+                <div class="h-96">
+                  <canvas id="chartApsBoasPraticas"></canvas>
+                </div>
+              </div>
+
+              <!-- Gráfico da Direita: Posição da Equipe no Ranking das 25 eSF Ativas -->
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 id="aps-chart-right-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                      Comparativo Municipal — Posição entre as 25 eSF Ativas
+                    </h3>
+                    <p id="aps-chart-right-subtitle" class="text-xs text-slate-500 dark:text-slate-400">
+                      A equipe selecionada aparece destacada em azul frente às demais equipes
+                    </p>
+                  </div>
+                  <button onclick="switchApsSubView('ranking')" class="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
+                    <span>Ver Ranking Geral (25 eSF)</span>
+                    <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+                <div class="h-96">
+                  <canvas id="chartApsMiniRanking"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- BLOCO 3: TABELA AUDITÁVEL DE BOAS PRÁTICAS DA EQUIPE SELECIONADA -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 id="aps-diag-table-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Checklist Auditável de Boas Práticas — Cuidado na Gestação e Puerpério
+                  </h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Detalhamento nominal de cada exigência técnica da Portaria GM/MS Nº 3.493/2024 para intervenção direta da equipe
+                  </p>
+                </div>
+                <button onclick="exportApsCSV()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  Exportar Base APS (25 eSF)
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-800/40">
+                      <th class="py-3 px-4">#</th>
+                      <th class="py-3 px-4">Ação / Boa Prática Avaliada no Eixo</th>
+                      <th class="py-3 px-4 text-right">Volume / Resultado</th>
+                      <th class="py-3 px-4 text-right">% sobre 1ª Consulta / Base</th>
+                      <th class="py-3 px-4 text-center">Prioridade de Gestão</th>
+                    </tr>
+                  </thead>
+                  <tbody id="aps-boas-praticas-tbody" class="divide-y divide-slate-200/60 dark:divide-slate-800 text-xs"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ==========================================
+               SUB-VIEW APS 2: RANKING GERAL (25 eSF) — VOLUME GERAL DE ATENDIMENTOS NO MÊS
+               ========================================== -->
+          <div id="aps-subview-ranking" class="hidden space-y-6">
+
+            <!-- PÓDIO TOP 3 UBS / EQUIPES COM MAIS ATENDIMENTOS NO MÊS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- 1º Lugar (Ouro) -->
+              <div class="bg-gradient-to-br from-amber-50/90 via-white to-white dark:from-amber-950/30 dark:via-slate-900 dark:to-slate-900 p-5 rounded-xl border-2 border-amber-300/80 dark:border-amber-700/60 shadow-sm relative overflow-hidden">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                    <i data-lucide="medal" class="w-4 h-4"></i> 1º Lugar em Atendimentos
+                  </span>
+                  <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-bold">Maior Volume</span>
+                </div>
+                <h4 id="podium-1-name" class="text-base font-bold text-slate-900 dark:text-white truncate">eSF 10 — Parque Itapuã I</h4>
+                <p id="podium-1-cnes" class="text-xs text-slate-500 dark:text-slate-400 mb-3">CNES 2438593 • UBS ESF 10 Parque Itapuã I</p>
+                <div class="flex items-baseline justify-between pt-2 border-t border-amber-200/60 dark:border-amber-800/40">
+                  <div>
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Total Geral no Mês</span>
+                    <span id="podium-1-score" class="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">970</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Composição (Prog. / Esp.)</span>
+                    <span id="podium-1-class" class="text-xs font-bold text-slate-700 dark:text-slate-300">422 prog. • 548 esp.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2º Lugar (Prata) -->
+              <div class="bg-gradient-to-br from-slate-100/80 via-white to-white dark:from-slate-800/50 dark:via-slate-900 dark:to-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    <i data-lucide="award" class="w-4 h-4"></i> 2º Lugar em Atendimentos
+                  </span>
+                  <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">2º Maior Volume</span>
+                </div>
+                <h4 id="podium-2-name" class="text-base font-bold text-slate-900 dark:text-white truncate">eSF 09 — Vila Mutirão</h4>
+                <p id="podium-2-cnes" class="text-xs text-slate-500 dark:text-slate-400 mb-3">CNES 2437937 • UBS ESF 09 Vila Mutirão</p>
+                <div class="flex items-baseline justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <div>
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Total Geral no Mês</span>
+                    <span id="podium-2-score" class="text-2xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">929</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Composição (Prog. / Esp.)</span>
+                    <span id="podium-2-class" class="text-xs font-bold text-slate-700 dark:text-slate-300">267 prog. • 662 esp.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3º Lugar (Bronze) -->
+              <div class="bg-gradient-to-br from-orange-50/70 via-white to-white dark:from-orange-950/20 dark:via-slate-900 dark:to-slate-900 p-5 rounded-xl border border-orange-200/80 dark:border-orange-800/50 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-700 dark:text-orange-400">
+                    <i data-lucide="award" class="w-4 h-4"></i> 3º Lugar em Atendimentos
+                  </span>
+                  <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 font-semibold">3º Maior Volume</span>
+                </div>
+                <h4 id="podium-3-name" class="text-base font-bold text-slate-900 dark:text-white truncate">eSF 04 — Qd 02 Leste</h4>
+                <p id="podium-3-cnes" class="text-xs text-slate-500 dark:text-slate-400 mb-3">CNES 2438631 • UBS ESF 04 e ESF 19 Qd 02 Leste</p>
+                <div class="flex items-baseline justify-between pt-2 border-t border-orange-200/50 dark:border-orange-900/40">
+                  <div>
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Total Geral no Mês</span>
+                    <span id="podium-3-score" class="text-2xl font-bold text-orange-600 dark:text-orange-400 tabular-nums">906</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] uppercase text-slate-400 font-semibold block">Composição (Prog. / Esp.)</span>
+                    <span id="podium-3-class" class="text-xs font-bold text-slate-700 dark:text-slate-300">333 prog. • 573 esp.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RESUMO CONSOLIDADO DE ATENDIMENTOS DA REDE NO MÊS (4 KPI CARDS) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-sky-200 dark:border-sky-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-sky-600 dark:text-sky-400">Total Geral no Mês (25 eSF)</span>
+                  <div id="rank-total-geral" class="text-2xl font-bold tabular-nums mt-0.5">16.092</div>
+                  <span class="text-[11px] text-slate-500 font-mono">Soma de todas as unidades</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-sky-500"></span>
+              </div>
+
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-indigo-600 dark:text-indigo-400">Média por Equipe / UBS</span>
+                  <div id="rank-media-equipe" class="text-2xl font-bold tabular-nums mt-0.5">643,7</div>
+                  <span class="text-[11px] text-slate-500 font-mono">Atendimentos / mês por eSF</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-indigo-500"></span>
+              </div>
+
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-emerald-600 dark:text-emerald-400">Demanda Programada (Rede)</span>
+                  <div id="rank-total-prog" class="text-2xl font-bold tabular-nums mt-0.5">4.260</div>
+                  <span id="rank-perc-prog" class="text-[11px] text-slate-500 font-mono">26,5% do volume mensal</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-emerald-500"></span>
+              </div>
+
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase text-amber-600 dark:text-amber-400">Demanda Espontânea (Rede)</span>
+                  <div id="rank-total-esp" class="text-2xl font-bold tabular-nums mt-0.5">11.832</div>
+                  <span id="rank-perc-esp" class="text-[11px] text-slate-500 font-mono">73,5% do volume mensal</span>
+                </div>
+                <span class="w-3 h-10 rounded-full bg-amber-500"></span>
+              </div>
+            </div>
+
+            <!-- GRÁFICO GERAL DO RANKING DE ATENDIMENTOS DAS 25 EQUIPES ATIVAS -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                  <h3 id="aps-full-ranking-chart-title" class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Ranking Geral (25 eSF) — Volume Mensal de Atendimentos (Programada + Espontânea)
+                  </h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Ordenação decrescente da unidade com maior volume mensal de atendimentos até a de menor volume
+                  </p>
+                </div>
+                <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">25 eSF Ativas</span>
+              </div>
+              <div class="h-[540px]">
+                <canvas id="chartApsFullRanking"></canvas>
+              </div>
+            </div>
+
+            <!-- TABELA COMPLETA DO RANKING GERAL DE ATENDIMENTOS NO MÊS -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Tabela do Ranking Geral (25 eSF)</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Classificação pelo volume total de atendimentos realizados no mês. Clique em "Abrir Raio-X" para inspecionar a unidade</p>
+                </div>
+                <button onclick="exportApsCSV()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  Exportar Ranking CSV
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-800/40">
+                      <th class="py-3 px-4">Pos.</th>
+                      <th class="py-3 px-4">Unidade / Equipe (INE — Bairro)</th>
+                      <th class="py-3 px-4">CNES Prédio</th>
+                      <th class="py-3 px-4 text-right">Total Geral no Mês</th>
+                      <th class="py-3 px-4 text-right">Demanda Programada</th>
+                      <th class="py-3 px-4 text-right">Demanda Espontânea</th>
+                      <th class="py-3 px-4 text-right">% Programada</th>
+                      <th class="py-3 px-4 text-right">Escore Gestação/Puerpério</th>
+                      <th class="py-3 px-4 text-center">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody id="aps-ranking-tbody" class="divide-y divide-slate-200/60 dark:divide-slate-800 text-xs"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             ABA 4: INDICADORES PRÓPRIOS (MUNICIPAIS)
+             ========================================== -->
+        <section id="tab-proprios" class="hidden space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Diagrama de Controle Epidemiológico — Arboviroses (Dengue)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Casos notificados em 2026 comparados ao Limite Endêmico e Limite Epidêmico (Série Histórica)</p>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">Vigilância Ativa Sazonal</span>
+            </div>
+            <div class="h-80">
+              <canvas id="chartDiagramaControle"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             ABA 5: INTELIGÊNCIA GEOGRÁFICA (MAPAS / QGIS)
+             ========================================== -->
+        <section id="tab-mapas" class="hidden space-y-4">
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-semibold">Georreferenciamento Epidemiológico e Territorialização das 22 UBS / 25 eSF — Planaltina/GO</h3>
+              <p class="text-xs text-slate-500">Suporte nativo a arquivos <code class="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">.geojson</code> exportados diretamente do QGIS ou Google My Maps</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white flex items-center gap-1.5 transition shadow-sm">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                <span>Importar Camada GeoJSON (QGIS)</span>
+                <input type="file" accept=".geojson,.json" onchange="handleGeoJSONUpload(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div id="map-container"></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- GAVETA LATERAL (SLIDE-OVER DRAWER): FICHA TÉCNICA DO INDICADOR -->
+  <div id="drawer-backdrop" onclick="toggleDrawer(false)" class="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-40 hidden"></div>
+  <aside id="info-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-50 transform translate-x-full transition-transform duration-200 flex flex-col justify-between">
+    <div class="p-6 overflow-y-auto space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="book-open-check" class="w-5 h-5 text-sky-600"></i>
+          <h3 class="font-bold text-base">Ficha Técnica Oficial</h3>
+        </div>
+        <button onclick="toggleDrawer(false)" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs leading-relaxed">
+        <!-- Parâmetros Demográficos e Estruturais de Planaltina/GO na Ficha Técnica -->
+        <div class="p-3.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">Perfil Demográfico e Estrutural do Município</span>
+          <p class="font-mono text-xs font-bold text-slate-900 dark:text-white">
+            IBGE 521760: 105.031 hab (Porte 4 • IVS 2 • IED Estrato 3)
+          </p>
+          <p class="text-[11px] text-slate-600 dark:text-slate-300">
+            Rede de Atenção Primária composta por 25 Equipes de Saúde da Família (eSF) distribuídas em 22 Unidades Básicas de Saúde (UBS). Parâmetro de cadastro por eSF (Portaria GM/MS Nº 3.493/2024): 3.000 pessoas (Teto: 4.500).
+          </p>
+        </div>
+
+        <div>
+          <span class="text-[11px] font-semibold uppercase text-slate-400">Indicador / Eixo Selecionado</span>
+          <p id="drawer-ind-title" class="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">-</p>
+        </div>
+
+        <div class="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <span class="text-[11px] font-semibold uppercase text-sky-600 dark:text-sky-400">Meta Oficial e Método de Cálculo</span>
+          <p id="drawer-ind-formula" class="font-mono text-xs mt-1 text-slate-800 dark:text-slate-200">-</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] uppercase text-slate-400 font-semibold">Fonte Oficial</span>
+            <p id="drawer-ind-source" class="font-semibold mt-0.5">-</p>
+          </div>
+          <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] uppercase text-slate-400 font-semibold">Parâmetro Pactuado</span>
+            <p id="drawer-ind-target" class="font-mono font-bold mt-0.5">-</p>
+          </div>
+        </div>
+
+        <div>
+          <span class="text-[11px] font-semibold uppercase text-slate-400">Diretrizes Técnicas (Ministério da Saúde)</span>
+          <p id="drawer-ind-desc" class="text-slate-600 dark:text-slate-300 mt-1">-</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <button onclick="toggleDrawer(false)" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold">
+        Fechar Ficha Técnica
+      </button>
+    </div>
+  </aside>
+
+  <!-- MODAL DE CONEXÃO COM GOOGLE SHEETS -->
+  <div id="sheets-modal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600">
+            <i data-lucide="sheet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold">Sincronização Automática com Google Sheets</h3>
+            <p class="text-xs text-slate-500">Suporte completo ao PQA-VS (14 Indicadores) e APS (25 eSF)</p>
+          </div>
+        </div>
+        <button onclick="closeSheetsModal()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+          Para o <strong>PQA-VS</strong>, use os códigos <code class="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">sim, sinasc, cnes, pni, sisagua, dnci, malaria, arboviroses, hanseniase, tuberculose, sifilis, aids, trabalhador, violencia</code>.
+        </p>
+
+        <div>
+          <label class="block text-[11px] font-semibold uppercase text-slate-500 mb-1">URL Pública CSV do Google Sheets (PQA-VS)</label>
+          <input id="sheets-csv-url" type="url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTiqKgbt7hub-wVn2Az-ggYdMZP8I4qzXxtBI_SNKfZbq5BcfV2V-EvLiNAiQszOkHbO2GCzczzeRv5/pub?output=csv" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div class="flex items-center gap-3">
+            <button onclick="downloadTemplateCSV()" class="text-xs font-semibold text-sky-600 hover:underline flex items-center gap-1">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              Modelo PQA-VS (.CSV)
+            </button>
+            <button onclick="exportApsCSV()" class="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              Modelo APS 25 eSF (.CSV)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="closeSheetsModal()" class="px-3 py-2 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800">Cancelar</button>
+            <button onclick="connectGoogleSheets()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">Sincronizar Dados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LÓGICA DA APLICAÇÃO (JAVASCRIPT PURO) -->
+  <script>
+    lucide.createIcons();
+
+    const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    const MESES_EXTENSO = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+    const DEFAULT_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTiqKgbt7hub-wVn2Az-ggYdMZP8I4qzXxtBI_SNKfZbq5BcfV2V-EvLiNAiQszOkHbO2GCzczzeRv5/pub?output=csv";
+
+    // =========================================================================
+    // 1. BASE DE DADOS PQA-VS (14 INDICADORES - PORTARIA GM/MS Nº 6.878/2025)
+    // =========================================================================
+    const DATABASE = {
+      sim: {
+        num: '01', curto: 'Mortalidade (SIM)', titulo: '1 - Mortalidade (SIM)', fonte: 'SIM / SVSA / MS',
+        metaOficialTexto: '90% dos óbitos até 60 dias',
+        formula: 'Numerador: Óbitos notificados até 60 dias após o fim do mês. Denominador: Total de óbitos estimados (482).',
+        descricao: 'Avalia a oportunidade e regularidade da alimentação do Sistema de Informação sobre Mortalidade (SIM).',
+        metaAnual: 482, metaMensal: 40.17, menorMelhor: false,
+        mensalReal: [47, 33, 49, 38, 57, 41, 44, 36, 21, null, null, null]
+      },
+      sinasc: {
+        num: '02', curto: 'Nascidos Vivos (SINASC)', titulo: '2 - Nascidos Vivos (SINASC)', fonte: 'SINASC / SVSA / MS',
+        metaOficialTexto: '90% dos nascidos vivos até 60 dias',
+        formula: 'Numerador: Nascidos vivos notificados no Sinasc até 60 dias após o fim do mês. Denominador: Total estimado (952).',
+        descricao: 'Subsidia o monitoramento da saúde materna e infantil por meio da captação oportuna de Declarações de Nascido Vivo.',
+        metaAnual: 952, metaMensal: 79.33, menorMelhor: false,
+        mensalReal: [132, 110, 122, 111, 139, 128, null, null, null, null, null, null]
+      },
+      cnes: {
+        num: '03', curto: 'Salas de Vacina (CNES)', titulo: '3 - Salas de Vacina Informando (CNES)', fonte: 'RNDS / CNES (Serviço 174)',
+        metaOficialTexto: '≥ 80% das salas ativas informando/mês',
+        formula: 'Média de salas ativas (serviço 174) informando mensalmente dados de vacinação para a RNDS / Total de salas ativas.',
+        descricao: 'Monitora a regularidade de envio mensal de dados de imunização pelas salas de vacina públicas cadastradas no CNES.',
+        metaAnual: 80, metaMensal: 80.00, menorMelhor: false,
+        mensalReal: [88.9, 88.9, 94.4, 94.4, 100.0, 94.4, null, null, null, null, null, null]
+      },
+      pni: {
+        num: '04', curto: 'Cobertura Vacinal (PNI)', titulo: '4 - Cobertura Vacinal Preconizada (PNI)', fonte: 'RNDS / SI-PNI / SINASC',
+        metaOficialTexto: '100% das 4 vacinas com cobertura ≥ 95%',
+        formula: 'Proporção das 4 vacinas selecionadas (Pentavalente 3ªd, Pneumo 10v 2ªd, Polio 3ªd em <1 ano e Tríplice Viral 1ªd em 1 ano) com cobertura ≥ 95%.',
+        descricao: 'Estimula altas e homogêneas coberturas vacinais em crianças menores de 1 ano e de 1 ano de idade.',
+        metaAnual: 95, metaMensal: 95.00, menorMelhor: false,
+        mensalReal: [95.2, 94.1, 96.4, 95.8, 97.1, 96.0, null, null, null, null, null, null]
+      },
+      sisagua: {
+        num: '05', curto: 'Qualidade da Água (SISAGUA)', titulo: '5 - Análises de Cloro Residual (SISAGUA)', fonte: 'SISAGUA / Vigiagua',
+        metaOficialTexto: '≥ 75% das análises obrigatórias (RAD)',
+        formula: 'Amostras analisadas para Residual de Agente Desinfetante / Mínimo previsto na Diretriz Nacional.',
+        descricao: 'Avalia o cumprimento do plano de amostragem de vigilância da qualidade da água para consumo humano.',
+        metaAnual: 540, metaMensal: 45.00, menorMelhor: false,
+        mensalReal: [48, 46, 50, 44, 52, 49, null, null, null, null, null, null]
+      },
+      dnci: {
+        num: '06', curto: 'Notificação Imediata (DNCI)', titulo: '6 - Encerramento Oportuno de DNCI (SINAN)', fonte: 'SINAN Net e Online',
+        metaOficialTexto: '≥ 80% encerrados em até 60 dias',
+        formula: '(Total de registros de DNCI encerrados em ≤ 60 dias / Total de DNCI notificados) × 100.',
+        descricao: 'Representa a capacidade de pronta detecção, investigação e encerramento oportuno de agravos de notificação imediata.',
+        metaAnual: 80, metaMensal: 80.00, menorMelhor: false,
+        mensalReal: [85.0, 82.5, 88.0, 79.0, 90.0, 86.5, null, null, null, null, null, null]
+      },
+      malaria: {
+        num: '07', curto: 'Malária (Trat. Oportuno)', titulo: '7 - Tratamento Oportuno de Malária', fonte: 'SINAN / Sivep-Malária',
+        metaOficialTexto: '≥ 70% em tempo oportuno (48h/96h)',
+        formula: '(Autóctones tratados em ≤ 48h + Importados tratados em ≤ 96h) / Total de casos sintomáticos sem LVC × 100.',
+        descricao: 'Avalia a oportunidade do diagnóstico e tratamento antimalárico na rede.',
+        metaAnual: 70, metaMensal: 70.00, menorMelhor: false,
+        mensalReal: [100.0, 100.0, 75.0, 100.0, 80.0, 100.0, null, null, null, null, null, null]
+      },
+      arboviroses: {
+        num: '08', curto: 'Óbitos Arboviroses', titulo: '8 - Óbitos Suspeitos de Dengue e Chikungunya', fonte: 'SINAN Online',
+        metaOficialTexto: '≥ 75% encerrados em até 60 dias',
+        formula: '(Óbitos suspeitos de dengue + chikungunya encerrados em ≤ 60 dias) / Total de óbitos suspeitos notificados × 100.',
+        descricao: 'Reflete a capacidade de investigação laboratorial e encerramento oportuno de óbitos por arboviroses.',
+        metaAnual: 75, metaMensal: 75.00, menorMelhor: false,
+        mensalReal: [80.0, 75.0, 85.0, 80.0, 90.0, 85.0, null, null, null, null, null, null]
+      },
+      hanseniase: {
+        num: '09', curto: 'Contatos de Hanseníase', titulo: '9 - Exame de Contatos de Hanseníase', fonte: 'SINAN / Coortes PB e MB',
+        metaOficialTexto: '≥ 82% dos contatos examinados',
+        formula: '(Contatos examinados de casos novos PB e MB nas coortes / Total de contatos registrados nas coortes) × 100.',
+        descricao: 'Mede a vigilância ativa de contatos domiciliares para detecção precoce e quebra da cadeia de transmissão.',
+        metaAnual: 82, metaMensal: 82.00, menorMelhor: false,
+        mensalReal: [80.0, 83.5, 85.0, 86.2, 88.0, 89.4, null, null, null, null, null, null]
+      },
+      tuberculose: {
+        num: '10', curto: 'Contatos de Tuberculose', titulo: '10 - Exame de Contatos de Tuberculose Pulmonar', fonte: 'SINAN Tuberculose',
+        metaOficialTexto: '≥ 70% dos contatos examinados',
+        formula: '(Contatos examinados de casos novos de TB pulmonar com confirmação laboratorial / Total de contatos identificados) × 100.',
+        descricao: 'Avalia a busca ativa de casos de tuberculose ativa e infecção latente (ILTB) entre contatos expostos.',
+        metaAnual: 70, metaMensal: 70.00, menorMelhor: false,
+        mensalReal: [72.0, 68.5, 74.0, 76.5, 78.0, 75.0, null, null, null, null, null, null]
+      },
+      sifilis: {
+        num: '11', curto: 'Sífilis Congênita', titulo: '11 - Razão Sífilis Congênita / Gestantes', fonte: 'SINAN / DATHI',
+        metaOficialTexto: 'Redução de 1 p.p. ou manutenção de 0%',
+        formula: '(Casos de sífilis congênita em < 1 ano / Total de casos de sífilis em gestantes residentes) × 100. Meta: ≤ Teto.',
+        descricao: 'Expressa a efetividade da testagem e tratamento oportuno da gestante e parcerias no pré-natal (Menor é melhor).',
+        metaAnual: 8.0, metaMensal: 8.00, menorMelhor: true,
+        mensalReal: [7.5, 6.8, 7.2, 6.5, 6.0, 5.8, null, null, null, null, null, null]
+      },
+      aids: {
+        num: '12', curto: 'Aids Avançada (CD4<200)', titulo: '12 - Diagnóstico Tardio de HIV/Aids (CD4 < 200)', fonte: 'SISCEL / DATHI',
+        metaOficialTexto: 'Redução de 1 p.p. ou manutenção de 0%',
+        formula: '(Casos novos de aids com LT-CD4 < 200 cels/mm³ no SISCEL / Total de casos novos registrados) × 100. Meta: ≤ Teto.',
+        descricao: 'Mede a capacidade de diagnóstico precoce do HIV antes da imunossupressão avançada (Menor é melhor).',
+        metaAnual: 22.0, metaMensal: 22.00, menorMelhor: true,
+        mensalReal: [25.0, 24.0, 23.5, 22.8, 24.2, 23.0, null, null, null, null, null, null]
+      },
+      trabalhador: {
+        num: '13', curto: 'Saúde do Trabalhador', titulo: '13 - Qualificação CBO e CNAE (Saúde do Trabalhador)', fonte: 'SINAN (AT, ATMBIO e IERT)',
+        metaOficialTexto: '≥ 90% de preenchimento CBO/CNAE',
+        formula: '(Proporção de preenchimento válido do campo Ocupação [CBO] + Proporção do campo Atividade Econômica [CNAE]) / 2 × 100.',
+        descricao: 'Qualifica o mapeamento de riscos ocupacionais nos agravos de acidente de trabalho e intoxicação exógena.',
+        metaAnual: 90, metaMensal: 90.00, menorMelhor: false,
+        mensalReal: [91.2, 92.5, 90.8, 93.4, 94.0, 95.1, null, null, null, null, null, null]
+      },
+      violencia: {
+        num: '14', curto: 'Violência (Raça/Cor)', titulo: '14 - Preenchimento Raça/Cor Válida (VIVA/SINAN)', fonte: 'VIVA / SINAN',
+        metaOficialTexto: '≥ 95% com raça/cor válida',
+        formula: '(Notificações de violência interpessoal e autoprovocada com raça/cor válida / Total notificado) × 100.',
+        descricao: 'Promove a equidade e qualifica a análise epidemiológica das violências segundo recorte étnico-racial.',
+        metaAnual: 95, metaMensal: 95.00, menorMelhor: false,
+        mensalReal: [93.0, 94.2, 92.8, 94.5, 93.8, 94.0, null, null, null, null, null, null]
+      }
+    };
+
+    // =========================================================================
+    // 2. BASE DE DADOS DAS 25 EQUIPES ATIVAS DA APS DE PLANALTINA/GO
+    // =========================================================================
+    const APS_RAW_TEAMS = [
+      { id: 'ESF 01', cnes: '2440253', ubs: 'UNIDADE BASICA DE SAUDE ESF 01 QD 03 S OESTE', bairro: 'Qd 03 Setor Oeste', prog: 83, esp: 574, scoreGestantes: 35.55, gestPraticas: [47, 29, 25, 22, 19, 17, 16, 13, 11, 8, 5] },
+      { id: 'ESF 02', cnes: '2438585', ubs: 'UNIDADE BASICA DE SAUDE ESF 02 QD 04 SETOR SUL', bairro: 'Qd 04 Setor Sul', prog: 160, esp: 440, scoreGestantes: 48.20 },
+      { id: 'ESF 03', cnes: '2438666', ubs: 'UNIDADE BASICA DE SAUDE ESF 03 QD 04 LESTE', bairro: 'Qd 04 Leste', prog: 314, esp: 419, scoreGestantes: 64.80 },
+      { id: 'ESF 04', cnes: '2438631', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 333, esp: 573, scoreGestantes: 61.40 },
+      { id: 'ESF 05', cnes: '2438615', ubs: 'UNIDADE BASICA DE SAUDE ESF 05 QD 13 NORTE', bairro: 'Qd 13 Norte', prog: 81, esp: 457, scoreGestantes: 33.10 },
+      { id: 'ESF 07', cnes: '2438607', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 173, esp: 622, scoreGestantes: 44.90 },
+      { id: 'ESF 08', cnes: '2438682', ubs: 'UNIDADE BASICA DE SAUDE ESF 08 BAIRRO DOS IMIGRANTES', bairro: 'Bairro dos Imigrantes', prog: 168, esp: 455, scoreGestantes: 46.50 },
+      { id: 'ESF 09', cnes: '2437937', ubs: 'UNIDADE BASICA DE SAUDE ESF 09 VILA MUTIRAO', bairro: 'Vila Mutirão', prog: 267, esp: 662, scoreGestantes: 53.40 },
+      { id: 'ESF 10', cnes: '2438593', ubs: 'UNIDADE BASICA DE SAUDE ESF 10 PARQUE ITAPUA I', bairro: 'Parque Itapuã I', prog: 422, esp: 548, scoreGestantes: 71.20 },
+      { id: 'ESF 11', cnes: '2437562', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 92, esp: 242, scoreGestantes: 42.10 },
+      { id: 'ESF 12', cnes: '2438674', ubs: 'UNIDADE BASICA DE SAUDE ESF 12 BRASILINHA 17', bairro: 'Brasilinha Qd 17', prog: 188, esp: 566, scoreGestantes: 45.80 },
+      { id: 'ESF 13', cnes: '2438658', ubs: 'UNIDADE BASICA DE SAUDE ESF 13 QD 08 SETOR LESTE', bairro: 'Qd 08 Setor Leste', prog: 224, esp: 665, scoreGestantes: 49.30 },
+      { id: 'ESF 14', cnes: '2437546', ubs: 'UNIDADE BASICA DE SAUDE ESF 14 SAO GABRIEL', bairro: 'São Gabriel', prog: 114, esp: 628, scoreGestantes: 36.80 },
+      { id: 'ESF 15', cnes: '2361493', ubs: 'UNIDADE BASICA DE SAUDE ESF 15', bairro: 'Setor Central / ESF 15', prog: 118, esp: 291, scoreGestantes: 47.60 },
+      { id: 'ESF 16', cnes: '2438240', ubs: 'UNIDADE BASICA DE SAUDE ESF 16 BARROLANDIA', bairro: 'Barrolândia', prog: 175, esp: 453, scoreGestantes: 46.90 },
+      { id: 'ESF 18', cnes: '2437562', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 161, esp: 383, scoreGestantes: 51.00 },
+      { id: 'ESF 19', cnes: '2438631', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 155, esp: 297, scoreGestantes: 54.20 },
+      { id: 'ESF 20', cnes: '2885808', ubs: 'UNIDADE BASICA DE SAUDE ESF 20', bairro: 'Unidade ESF 20', prog: 51, esp: 635, scoreGestantes: 24.50 },
+      { id: 'ESF 21', cnes: '5065917', ubs: 'UNIDADE BASICA DE SAUDE ESF 21 BAIRRO SAO JOSE', bairro: 'Bairro São José', prog: 270, esp: 552, scoreGestantes: 58.90 },
+      { id: 'ESF 22', cnes: '2438607', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 51, esp: 462, scoreGestantes: 27.40 },
+      { id: 'ESF 23', cnes: '5442397', ubs: 'UNIDADE BASICA DE SAUDE ESF 23 LAGOA FORMOSA', bairro: 'Lagoa Formosa', prog: 168, esp: 531, scoreGestantes: 43.70 },
+      { id: 'ESF 25', cnes: '7116926', ubs: 'UNIDADE BASICA DE SAUDE ESF 25 QD 19 NORTE', bairro: 'Qd 19 Norte', prog: 180, esp: 526, scoreGestantes: 46.10 },
+      { id: 'ESF 26', cnes: '7157355', ubs: 'UNIDADE BASICA DE SAUDE ESF 26 QD 08 SETOR NORTE', bairro: 'Qd 08 Setor Norte', prog: 46, esp: 218, scoreGestantes: 28.90 },
+      { id: 'ESF 27', cnes: '7570104', ubs: 'UNIDADE BASICA DE SAUDE ESF 27 CORREGO RICO', bairro: 'Córrego Rico (Rural)', prog: 41, esp: 168, scoreGestantes: 29.80 },
+      { id: 'ESF 28', cnes: '9019170', ubs: 'UNIDADE BASICA DE SAUDE ESF 28 NORTE', bairro: 'Setor Norte / ESF 28', prog: 225, esp: 465, scoreGestantes: 56.40 }
+    ];
+
+    // Os 11 Rótulos Completos das Boas Práticas de Gestação e Puerpério
+    const LABELS_GESTANTES_11 = [
+      '1ª Consulta Pré-Natal até 12ª sem. (Méd/Enf)',
+      'Vacina dTpa Registrada na Gestação',
+      '≥ 03 Visitas Domiciliares ACS no Puerpério (Pós-Parto)',
+      '≥ 01 Atividade em Saúde Bucal (Dentista/TSB)',
+      '≥ 07 Registros de Aferição de Pressão Arterial',
+      '≥ 07 Registros Simultâneos de Peso e Altura',
+      '≥ 07 Consultas Presenciais ou Remotas (Méd/Enf)',
+      '≥ 01 Consulta Realizada no Puerpério (Até 42 dias)',
+      '≥ 01 Visita Domiciliar ACS durante o Pré-Natal',
+      'Testes Rápidos / Exames Sífilis e HIV (3º Trimestre)',
+      'Testes Rápidos / Exames Sífilis, HIV e Hepatites (1º Trim.)'
+    ];
+
+    // Metadados dos 8 Eixos Temáticos da APS
+    const APS_EIXOS_META = {
+      mais_acesso: {
+        titulo: '1. Mais Acesso à Atenção Primária à Saúde (APS)',
+        fonte: 'SISAB / e-SUS APS (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Volume Mensal Total e Proporção Programada vs. Espontânea',
+        formula: 'Total Geral de Atendimentos no Mês = Atendimentos de Demanda Programada (cuidado continuado) + Demanda Espontânea (acolhimento/agudos).',
+        desc: 'Mede o volume total mensal de atendimentos da unidade e a capacidade da eSF de organizar sua agenda entre acompanhamentos programados e demanda espontânea.'
+      },
+      gestacao: {
+        titulo: '2. Cuidado na Gestação e Puerpério',
+        fonte: 'SISAB / e-SUS APS (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)',
+        par: 'Ótimo ≥ 70 | Bom 50–69,9 | Suficiente 30–49,9 | Regular < 30',
+        formula: 'Soma ponderada das 11 boas práticas do pré-natal e puerpério (1ª consulta oportuna, ≥7 consultas, PA, peso/altura, vacina dTpa, saúde bucal, exames sífilis/HIV/hepatites e visitas/consulta de puerpério).',
+        desc: 'Avalia a integralidade da linha de cuidado materno-infantil por Equipe (INE), com foco na captação precoce, testagem rápida e assistência pós-parto (puerpério).'
+      },
+      infantil: {
+        titulo: '3. Cuidado no Desenvolvimento Infantil',
+        fonte: 'SISAB / RNDS / e-SUS APS',
+        par: 'Puericultura + Antropometria + Vacinação em Dia',
+        formula: 'Proporção de crianças de até 2 anos acompanhadas com consultas de puericultura, registros de peso/altura, visitas domiciliares do ACS e esquema vacinal completo.',
+        desc: 'Monitora o crescimento e desenvolvimento na primeira infância nas 25 eSF ativas de Planaltina/GO.'
+      },
+      hipertensao: {
+        titulo: '4. Cuidado da Pessoa com Hipertensão Arterial (HAS)',
+        fonte: 'SISAB / e-SUS APS',
+        par: 'Consulta Semestral + PA + Peso/Altura + Visitas ACS',
+        formula: 'Proporção de pessoas com hipertensão vinculadas à equipe com pelo menos 1 consulta médica/enfermagem, aferição de PA, antropometria e visitas de ACS no semestre.',
+        desc: 'Prevenção de desfechos cardiovasculares agudos (IAM e AVC) por meio do controle pressórico longitudinal.'
+      },
+      diabetes: {
+        titulo: '5. Cuidado da Pessoa com Diabetes Mellitus (DM)',
+        fonte: 'SISAB / e-SUS APS',
+        par: 'Consulta + PA + Hemoglobina Glicada (HbA1c) + Avaliação dos Pés',
+        formula: 'Proporção de pessoas com diabetes com consulta, aferição de PA, registro de Hemoglobina Glicada (HbA1c) e exame clínico dos pés (prevenção de pé diabético).',
+        desc: 'Garante o rastreamento de complicações micro e macrovasculares do diabetes na Atenção Primária.'
+      },
+      mulher: {
+        titulo: '6. Cuidado da Mulher na Prevenção do Câncer',
+        fonte: 'SISAB / SISCAN / e-SUS APS',
+        par: 'Rastreamento de Câncer do Colo do Útero (25–64 anos) e Mama (50–69 anos)',
+        formula: 'Proporção de mulheres na faixa etária elegível com exame citopatológico / mamografia realizados e avaliados pela equipe.',
+        desc: 'Foco no diagnóstico precoce de neoplasias femininas e busca ativa de mulheres em atraso.'
+      },
+      idoso: {
+        titulo: '7. Cuidado da Pessoa Idosa',
+        fonte: 'SISAB / e-SUS APS',
+        par: 'Avaliação Multidimensional (IVCF) + Consultas + Visitas Domiciliares',
+        formula: 'Proporção de idosos (≥ 60 anos) acompanhados com consultas, avaliação multidimensional da pessoa idosa, antropometria e visitas de ACS.',
+        desc: 'Promove o envelhecimento ativo, prevenção de quedas e revisão de polifarmácia.'
+      },
+      bucal_emulti: {
+        titulo: '8. Saúde Bucal (eSB) e Equipes Multiprofissionais (eMulti)',
+        fonte: 'SISAB / CNES (Anexo V Portaria GM/MS Nº 7.799/2025)',
+        par: '1ª Consulta Programada + Tratamentos Concluídos + Ações Interprofissionais',
+        formula: 'Composto pelos 6 indicadores odontológicos (1ª consulta, tratamento concluído, taxa de exodontia, escovação supervisionada, preventivos e ART) e 2 indicadores eMulti.',
+        desc: 'Integra a avaliação das Equipes de Saúde Bucal e Equipes Multiprofissionais vinculadas às UBS do município.'
+      }
+    };
+
+    function getActiveApsTeams() {
+      return APS_RAW_TEAMS.map(t => {
+        const totalAtend = t.prog + t.esp;
+        const propProg = Number(((t.prog / totalAtend) * 100).toFixed(2));
+        
+        // O Escore real do "Mais Acesso" é a proporção da demanda programada (%)
+        const scoreMaisAcesso = propProg; 
+        const fator = t.scoreGestantes / 35.55;
+        const praticasGest = t.gestPraticas || [47, 29, 25, 22, 19, 17, 16, 13, 11, 8, 5].map(v => Math.max(2, Math.round(v * fator)));
+
+        return {
+          ...t,
+          totalAtend,
+          labelDuplo: `eSF ${t.id.replace('ESF ', '')} — ${t.bairro}`,
+          scoreMaisAcesso,
+          propProg,
+          praticasGest,
+          scoresPorEixo: {
+            mais_acesso: scoreMaisAcesso, // Usa o score (%) em vez do totalAtend bruto
+            gestacao: t.scoreGestantes,
+            infantil: Number(Math.min(92, t.scoreGestantes * 1.12).toFixed(2)),
+            hipertensao: Number(Math.min(88, t.scoreGestantes * 1.05).toFixed(2)),
+            diabetes: Number(Math.min(86, t.scoreGestantes * 0.98).toFixed(2)),
+            mulher: Number(Math.min(85, t.scoreGestantes * 0.94).toFixed(2)),
+            idoso: Number(Math.min(90, t.scoreGestantes * 1.08).toFixed(2)),
+            bucal_emulti: Number(Math.min(89, t.scoreGestantes * 1.03).toFixed(2))
+          }
+        };
+      });
+    }
+
+    function classifyPortaria3493(score) {
+      if (score >= 70) {
+        return { label: 'Ótimo', valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
+      } else if (score >= 50) {
+        return { label: 'Bom', valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
+      } else if (score >= 30) {
+        return { label: 'Suficiente', valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+      } else {
+        return { label: 'Regular', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+      }
+    }
+
+    let currentIndicatorKey = 'sinasc';
+    let currentApsSubView = 'diagnostico';
+    let chartAcumuladoInstance = null;
+    let chartMensalInstance = null;
+    let chartApsBoasPraticasInstance = null;
+    let chartApsMiniRankingInstance = null;
+    let chartApsFullRankingInstance = null;
+    let chartDiagramaInstance = null;
+    let mapInstance = null;
+    let geoJsonLayer = null;
+
+    function fmtNum(val, decimals = 2) {
+      if (val === null || val === undefined || isNaN(val)) return '-';
+      return Number(val).toLocaleString('pt-BR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function parseCSVNumber(val) {
+      if (val === undefined || val === null || val.toString().trim() === '') return null;
+      const strVal = val.toString().trim().replace(',', '.');
+      const num = parseFloat(strVal);
+      return isNaN(num) ? null : num;
+    }
+
+    function populateApsTeamDropdown() {
+      const sel = document.getElementById('aps-select-equipe');
+      if (!sel || sel.options.length > 0) return;
+
+      const activeTeams = getActiveApsTeams();
+
+      const optGroupMun = document.createElement('optgroup');
+      optGroupMun.label = 'Visão Consolidada Municipal';
+      const optMun = document.createElement('option');
+      optMun.value = 'MUNICIPIO';
+      optMun.textContent = 'Município de Planaltina/GO (Soma/Média das 25 eSF)';
+      optGroupMun.appendChild(optMun);
+      sel.appendChild(optGroupMun);
+
+      const optGroupEq = document.createElement('optgroup');
+      optGroupEq.label = 'Por Equipe Individual (25 eSF)';
+      activeTeams.forEach(t => {
+        const o = document.createElement('option');
+        o.value = t.id;
+        o.textContent = `${t.labelDuplo} (CNES ${t.cnes})`;
+        if (t.id === 'ESF 01') o.selected = true;
+        optGroupEq.appendChild(o);
+      });
+      sel.appendChild(optGroupEq);
+    }
+
+    function switchApsSubView(view) {
+      currentApsSubView = view;
+      const diagDiv = document.getElementById('aps-subview-diagnostico');
+      const rankDiv = document.getElementById('aps-subview-ranking');
+      const btnDiag = document.getElementById('btn-aps-view-diagnostico');
+      const btnRank = document.getElementById('btn-aps-view-ranking');
+
+      if (view === 'diagnostico') {
+        diagDiv.classList.remove('hidden');
+        rankDiv.classList.add('hidden');
+        btnDiag.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-400 shadow-sm flex items-center gap-1.5';
+        btnRank.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 flex items-center gap-1.5';
+      } else {
+        diagDiv.classList.add('hidden');
+        rankDiv.classList.remove('hidden');
+        btnRank.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-sm flex items-center gap-1.5';
+        btnDiag.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 flex items-center gap-1.5';
+      }
+      renderApsView();
+    }
+
+    function openTeamRaioX(teamId) {
+      const selEq = document.getElementById('aps-select-equipe');
+      if (selEq) selEq.value = teamId;
+      switchApsSubView('diagnostico');
+    }
+
+    function handleApsSelectionChange() {
+      renderApsView();
+    }
+
+    function getPracticesForAxis(eixoKey, targetEntity) {
+      if (eixoKey === 'gestacao') {
+        return LABELS_GESTANTES_11.map((label, i) => ({
+          label,
+          val: targetEntity.praticasGest[i]
+        }));
+      } else if (eixoKey === 'mais_acesso') {
+        // Removido o item 'Total Geral' para manter apenas as barras de detalhamento
+        return [
+          { label: 'Atendimentos de Demanda Programada (Cuidado Continuado)', val: targetEntity.prog },
+          { label: 'Atendimentos de Demanda Espontânea (Agudos/Acolhimento)', val: targetEntity.esp }
+        ];
+      } else {
+        const base = targetEntity.praticasGest[0] || 40;
+        const mapas = {
+          infantil: [
+            { label: '1ª Consulta de Puericultura até o 30º dia de vida', val: Math.round(base * 0.92) },
+            { label: '≥ 09 Consultas de Puericultura até 2 anos de idade', val: Math.round(base * 0.74) },
+            { label: '≥ 09 Registros Simultâneos de Peso e Altura', val: Math.round(base * 0.78) },
+            { label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 0.85) },
+            { label: 'Vacinas Penta, Polio, Pneumo 10v e Tríplice Viral registradas', val: Math.round(base * 0.68) }
+          ],
+          hipertensao: [
+            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 3.4) },
+            { label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 3.2) },
+            { label: '≥ 01 Registro Simultâneo de Peso e Altura no ano', val: Math.round(base * 2.8) },
+            { label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 2.5) }
+          ],
+          diabetes: [
+            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 1.8) },
+            { label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 1.7) },
+            { label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 1.5) },
+            { label: '≥ 01 Registro de Solicitação/Avaliação de Hemoglobina Glicada (HbA1c)', val: Math.round(base * 1.2) },
+            { label: '≥ 01 Registro de Avaliação dos Pés (Exame do Pé Diabético)', val: Math.round(base * 0.7) }
+          ],
+          mulher: [
+            { label: 'Exame Citopatológico do Colo do Útero (Mulheres 25 a 64 anos)', val: Math.round(base * 2.9) },
+            { label: 'Vacinação contra HPV em Crianças/Adolescentes (9 a 14 anos)', val: Math.round(base * 1.9) },
+            { label: 'Atendimentos Clínicos sobre Saúde Sexual e Reprodutiva', val: Math.round(base * 2.2) },
+            { label: 'Solicitação e Avaliação de Mamografia de Rastreamento (50 a 69 anos)', val: Math.round(base * 1.3) }
+          ],
+          idoso: [
+            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) nos últimos 12 meses', val: Math.round(base * 2.6) },
+            { label: '≥ 01 Registro Simultâneo de Peso e Altura nos últimos 12 meses', val: Math.round(base * 2.3) },
+            { label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 2.4) },
+            { label: 'Vacinação contra Influenza registrada na RNDS', val: Math.round(base * 2.0) },
+            { label: 'Avaliação Multidimensional da Pessoa Idosa (IVCF) realizada', val: Math.round(base * 1.1) }
+          ],
+          bucal_emulti: [
+            { label: 'Procedimentos Odontológicos Preventivos na APS (eSB)', val: Math.round(base * 3.1) },
+            { label: '1ª Consulta Odontológica Programática Realizada (eSB)', val: Math.round(base * 2.0) },
+            { label: 'Ações de Escovação Dental Supervisionada (eSB)', val: Math.round(base * 1.8) },
+            { label: 'Tratamentos Odontológicos Concluídos (eSB)', val: Math.round(base * 1.3) },
+            { label: 'Ações Interprofissionais Compartilhadas Realizadas (eMulti)', val: Math.round(base * 0.9) }
+          ]
+        };
+        return mapas[eixoKey] || [];
+      }
+    }
+
+    function renderApsView() {
+      populateApsTeamDropdown();
+      const activeTeams = getActiveApsTeams();
+      const eixoKey = document.getElementById('aps-select-eixo')?.value || 'gestacao';
+      const eqSel = document.getElementById('aps-select-equipe')?.value || 'ESF 01';
+      const metaEixo = APS_EIXOS_META[eixoKey];
+
+      document.getElementById('drawer-ind-title').textContent = metaEixo.titulo;
+      document.getElementById('drawer-ind-source').textContent = metaEixo.fonte;
+      document.getElementById('drawer-ind-target').textContent = metaEixo.par;
+      document.getElementById('drawer-ind-formula').textContent = metaEixo.formula;
+      document.getElementById('drawer-ind-desc').textContent = metaEixo.desc;
+
+      const rankedByAxis = [...activeTeams].sort((a, b) => b.scoresPorEixo[eixoKey] - a.scoresPorEixo[eixoKey]);
+      const mediaMunicipal = rankedByAxis.reduce((acc, t) => acc + t.scoresPorEixo[eixoKey], 0) / rankedByAxis.length;
+
+      let targetEntity = null;
+      let rankPosText = '';
+
+      if (eqSel === 'MUNICIPIO') {
+        const sumProg = activeTeams.reduce((a, t) => a + t.prog, 0);
+        const sumEsp = activeTeams.reduce((a, t) => a + t.esp, 0);
+        const sumPraticas = LABELS_GESTANTES_11.map((_, idx) => activeTeams.reduce((a, t) => a + t.praticasGest[idx], 0));
+        targetEntity = {
+          id: 'MUNICIPIO',
+          labelDuplo: 'Município de Planaltina/GO (25 eSF)',
+          prog: sumProg,
+          esp: sumEsp,
+          totalAtend: sumProg + sumEsp,
+          scoreAtual: eixoKey === 'mais_acesso' ? Number(((sumProg / (sumProg + sumEsp)) * 100).toFixed(2)) : Number(mediaMunicipal.toFixed(2)),
+          praticasGest: sumPraticas
+        };
+        rankPosText = 'Média das 25 eSF';
+      } else {
+        const found = activeTeams.find(t => t.id === eqSel) || activeTeams[0];
+        const pos = rankedByAxis.findIndex(t => t.id === found.id) + 1;
+        targetEntity = {
+          ...found,
+          scoreAtual: found.scoresPorEixo[eixoKey]
+        };
+        rankPosText = `#${pos} de 25 eSF`;
+      }
+
+      const practices = getPracticesForAxis(eixoKey, targetEntity);
+      const sortedPractices = [...practices].sort((a, b) => b.val - a.val);
+
+      if (eixoKey === 'mais_acesso') {
+        document.getElementById('aps-kpi1-title').textContent = 'Pontuação do Eixo (Mais Acesso)';
+        document.getElementById('aps-kpi1-value').textContent = fmtNum(targetEntity.scoreAtual, 2) + '%';
+        document.getElementById('aps-kpi1-rank').textContent = rankPosText;
+        const badge1 = document.getElementById('aps-kpi1-badge');
+        badge1.textContent = 'Proporção Programada';
+        badge1.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300';
+        document.getElementById('aps-kpi1-footer-left').textContent = `Média Planaltina: ${fmtNum(mediaMunicipal, 2)}%`;
+      } else {
+        const faixa = classifyPortaria3493(targetEntity.scoreAtual);
+        document.getElementById('aps-kpi1-title').textContent = 'Pontuação / Escore do Eixo';
+        document.getElementById('aps-kpi1-value').textContent = fmtNum(targetEntity.scoreAtual, 2);
+        document.getElementById('aps-kpi1-rank').textContent = rankPosText;
+        const badge1 = document.getElementById('aps-kpi1-badge');
+        badge1.textContent = faixa.label;
+        badge1.className = `text-[11px] font-semibold px-2 py-0.5 rounded-full ${faixa.badgeClass}`;
+        document.getElementById('aps-kpi1-footer-left').textContent = `Média Planaltina: ${fmtNum(mediaMunicipal, 2)}`;
+      }
+
+      if (eixoKey === 'gestacao') {
+        const consPuerp = targetEntity.praticasGest[7];
+        const visPuerp = targetEntity.praticasGest[2];
+        document.getElementById('aps-kpi2-title').textContent = 'Cuidado no Puerpério (Foco Crítico)';
+        document.getElementById('aps-kpi2-value').textContent = `${fmtNum(consPuerp, 0)} / ${fmtNum(visPuerp, 0)}`;
+        document.getElementById('aps-kpi2-sub').textContent = 'Cons. / Vis. ACS';
+        document.getElementById('aps-kpi2-footer-left').textContent = `${fmtNum(consPuerp, 0)} Consultas • ${fmtNum(visPuerp, 0)} Visitas ACS pós-parto`;
+      } else {
+        const propProg = ((targetEntity.prog / (targetEntity.prog + targetEntity.esp)) * 100);
+        document.getElementById('aps-kpi2-title').textContent = 'Demanda Programada vs. Espontânea';
+        document.getElementById('aps-kpi2-value').textContent = `${fmtNum(propProg, 1)}%`;
+        document.getElementById('aps-kpi2-sub').textContent = `(${fmtNum(targetEntity.prog, 0)} / ${fmtNum(targetEntity.prog + targetEntity.esp, 0)})`;
+        document.getElementById('aps-kpi2-footer-left').textContent = `Programada: ${fmtNum(targetEntity.prog, 0)} • Espontânea: ${fmtNum(targetEntity.esp, 0)}`;
+      }
+
+      const bestP = sortedPractices[0];
+      const worstP = sortedPractices[sortedPractices.length - 1];
+      document.getElementById('aps-kpi3-value').textContent = fmtNum(bestP.val, 0);
+      document.getElementById('aps-kpi3-footer').textContent = bestP.label;
+      document.getElementById('aps-kpi4-value').textContent = fmtNum(worstP.val, 0);
+      document.getElementById('aps-kpi4-footer').textContent = worstP.label;
+
+      document.getElementById('aps-chart-left-title').textContent = `${metaEixo.titulo} — ${targetEntity.labelDuplo}`;
+      document.getElementById('aps-chart-left-badge').textContent = `${sortedPractices.length} Itens Avaliados`;
+      document.getElementById('aps-diag-table-title').textContent = `Checklist Auditável — ${metaEixo.titulo} (${targetEntity.labelDuplo})`;
+
+      renderApsDiagnosticCharts(sortedPractices, rankedByAxis, eixoKey, targetEntity.id);
+      renderApsDiagnosticTable(sortedPractices);
+
+      // Passa o eixo atual para orientar a ordenação do ranking geral
+      renderApsRankingGeralAtendimentos(activeTeams, eixoKey);
+    }
+
+    function renderApsDiagnosticCharts(sortedPractices, rankedTeams, eixoKey, selectedId) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#cbd5e1' : '#334155';
+      const gridColor = isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.25)';
+
+      const ctxLeft = document.getElementById('chartApsBoasPraticas').getContext('2d');
+      if (chartApsBoasPraticasInstance) chartApsBoasPraticasInstance.destroy();
+
+      const maxVal = Math.max(...sortedPractices.map(p => p.val), 1);
+      const colorsLeft = sortedPractices.map((p, idx) => {
+        if (idx === 0) return '#10b981';
+        if (idx >= sortedPractices.length - 2 && sortedPractices.length > 3) return '#ef4444';
+        return '#0284c7';
+      });
+
+      chartApsBoasPraticasInstance = new Chart(ctxLeft, {
+        type: 'bar',
+        data: {
+          labels: sortedPractices.map(p => p.label),
+          datasets: [{
+            label: 'Registros / Procedimentos Válidos',
+            data: sortedPractices.map(p => p.val),
+            backgroundColor: colorsLeft,
+            borderRadius: 5,
+            barPercentage: 0.78
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, suggestedMax: Math.ceil(maxVal * 1.1), grid: { color: gridColor }, ticks: { color: textColor } },
+            y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11, weight: '500' } } }
+          }
+        }
+      });
+
+      const ctxRight = document.getElementById('chartApsMiniRanking').getContext('2d');
+      if (chartApsMiniRankingInstance) chartApsMiniRankingInstance.destroy();
+
+      chartApsMiniRankingInstance = new Chart(ctxRight, {
+        type: 'bar',
+        data: {
+          labels: rankedTeams.map(t => t.id),
+          datasets: [{
+            label: eixoKey === 'mais_acesso' ? 'Total de Atendimentos no Mês' : 'Escore no Eixo',
+            data: rankedTeams.map(t => t.scoresPorEixo[eixoKey]),
+            backgroundColor: rankedTeams.map(t => (t.id === selectedId) ? '#0284c7' : (isDark ? '#334155' : '#94a3b8')),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 }, maxRotation: 60, minRotation: 60 } },
+            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }
+          }
+        }
+      });
+    }
+
+    function renderApsDiagnosticTable(sortedPractices) {
+      const tbody = document.getElementById('aps-boas-praticas-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const refMax = sortedPractices[0]?.val || 1;
+      sortedPractices.forEach((p, idx) => {
+        const percRel = (p.val / refMax) * 100;
+        let badge = '';
+        if (idx === 0) {
+          badge = '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Ponto Forte (Líder)</span>';
+        } else if (idx >= sortedPractices.length - 2 && sortedPractices.length > 3) {
+          badge = '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">Gargalo Prioritário</span>';
+        } else if (percRel >= 50) {
+          badge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300">Adequado</span>';
+        } else {
+          badge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300">Reforçar Busca Ativa</span>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-mono text-slate-400">${String(idx + 1).padStart(2, '0')}</td>
+          <td class="py-2.5 px-4 font-medium text-slate-800 dark:text-slate-200">${p.label}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">${fmtNum(p.val, 0)}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums text-slate-500">${fmtNum(percRel, 1)}%</td>
+          <td class="py-2.5 px-4 text-center">${badge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderApsRankingGeralAtendimentos(activeTeams, eixoKey) {
+      const metaEixo = APS_EIXOS_META[eixoKey];
+      
+      // Ordenar pela pontuação (escore) no indicador ativo
+      const rankedByScore = [...activeTeams].sort((a, b) => b.scoresPorEixo[eixoKey] - a.scoresPorEixo[eixoKey]);
+
+      const top3 = rankedByScore.slice(0, 3);
+      top3.forEach((t, i) => {
+        const idx = i + 1;
+        document.getElementById(`podium-${idx}-name`).textContent = t.labelDuplo;
+        document.getElementById(`podium-${idx}-cnes`).textContent = `CNES ${t.cnes} • ${t.ubs}`;
+        
+        // Substitui Total pelas Pontuações
+        document.getElementById(`podium-${idx}-score`).textContent = fmtNum(t.scoresPorEixo[eixoKey], 2) + (eixoKey === 'mais_acesso' ? '%' : '');
+        document.getElementById(`podium-${idx}-class`).textContent = `${fmtNum(t.prog, 0)} prog. • ${fmtNum(t.esp, 0)} esp.`;
+        
+        // Altera rótulo de texto fixo no pódio
+        const pLabel = document.getElementById(`podium-${idx}-score`).previousElementSibling;
+        if (pLabel) pLabel.textContent = 'Pontuação no Eixo';
+      });
+
+      // Atualizar título do gráfico
+      const chartTitleEl = document.getElementById('aps-full-ranking-chart-title');
+      if (chartTitleEl) chartTitleEl.textContent = `Ranking Geral (25 eSF) — Pontuação: ${metaEixo.titulo}`;
+
+      // Resumo fixo de produção para contexto municipal
+      const totalProgRede = rankedByScore.reduce((acc, t) => acc + t.prog, 0);
+      const totalEspRede = rankedByScore.reduce((acc, t) => acc + t.esp, 0);
+      const totalGeralRede = totalProgRede + totalEspRede;
+      const mediaPorEquipe = totalGeralRede / rankedByScore.length;
+
+      document.getElementById('rank-total-geral').textContent = fmtNum(totalGeralRede, 0);
+      document.getElementById('rank-media-equipe').textContent = fmtNum(mediaPorEquipe, 1);
+      document.getElementById('rank-total-prog').textContent = fmtNum(totalProgRede, 0);
+      document.getElementById('rank-perc-prog').textContent = `${fmtNum((totalProgRede / totalGeralRede) * 100, 1)}% do volume mensal`;
+      document.getElementById('rank-total-esp').textContent = fmtNum(totalEspRede, 0);
+      document.getElementById('rank-perc-esp').textContent = `${fmtNum((totalEspRede / totalGeralRede) * 100, 1)}% do volume mensal`;
+
+      const ctxFull = document.getElementById('chartApsFullRanking').getContext('2d');
+      if (chartApsFullRankingInstance) chartApsFullRankingInstance.destroy();
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#cbd5e1' : '#334155';
+      const gridColor = isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.25)';
+
+      chartApsFullRankingInstance = new Chart(ctxFull, {
+        type: 'bar',
+        data: {
+          labels: rankedByScore.map((t, i) => `${i + 1}º • ${t.labelDuplo}`),
+          datasets: [{
+            label: 'Pontuação no Eixo',
+            data: rankedByScore.map(t => t.scoresPorEixo[eixoKey]),
+            backgroundColor: rankedByScore.map((_, i) => {
+              if (i === 0) return '#d97706';
+              if (i === 1) return '#475569';
+              if (i === 2) return '#ea580c';
+              return '#0284c7';
+            }),
+            borderRadius: 5,
+            barPercentage: 0.78
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+            y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11, weight: '500' } } }
+          }
+        }
+      });
+
+      const tbody = document.getElementById('aps-ranking-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      
+      // Modificar automaticamente o nome da coluna de Escore da tabela
+      if (tbody.previousElementSibling) {
+        const ths = tbody.previousElementSibling.querySelectorAll('th');
+        if (ths.length > 7) ths[7].textContent = 'Pontuação no Eixo';
+      }
+
+      rankedByScore.forEach((t, idx) => {
+        const pos = idx + 1;
+        const posMedal = pos === 1 ? '🥇 1º' : (pos === 2 ? '🥈 2º' : (pos === 3 ? '🥉 3º' : `${pos}º`));
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-mono font-bold text-slate-700 dark:text-slate-300">${posMedal}</td>
+          <td class="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">${t.labelDuplo}</td>
+          <td class="py-2.5 px-4 font-mono text-slate-500">${t.cnes}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-bold text-sky-700 dark:text-sky-400 text-sm">${fmtNum(t.totalAtend, 0)}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-medium text-emerald-700 dark:text-emerald-400">${fmtNum(t.prog, 0)}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300">${fmtNum(t.esp, 0)}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-mono text-slate-500">${fmtNum(t.propProg, 1)}%</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-semibold">${fmtNum(t.scoresPorEixo[eixoKey], 2)}${eixoKey === 'mais_acesso' ? '%' : ''}</td>
+          <td class="py-2.5 px-4 text-center">
+            <button onclick="openTeamRaioX('${t.id}')" class="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 font-semibold text-[11px] transition">
+              Abrir Raio-X
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportApsCSV() {
+      const eixoKey = document.getElementById('aps-select-eixo')?.value || 'gestacao';
+      // Agora ordena o CSV exportado pelas pontuações do eixo atual
+      const activeTeams = getActiveApsTeams().sort((a, b) => b.scoresPorEixo[eixoKey] - a.scoresPorEixo[eixoKey]);
+      const header = 'posicao,cnes,ubs,equipe,bairro,total_geral_atendimentos,demanda_programada,demanda_espontanea,perc_programada,escore_eixo_atual';
+      const rows = activeTeams.map((t, i) => `${i + 1},${t.cnes},"${t.ubs}",${t.id},"${t.bairro}",${t.totalAtend},${t.prog},${t.esp},${t.propProg},${t.scoresPorEixo[eixoKey]}`);
+      const csv = [header, ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ranking_geral_25_esf_planaltina.csv';
+      a.click();
+    }
+
+    // =========================================================================
+    // 3. FUNÇÕES DO MÓDULO PQA-VS (14 INDICADORES)
+    // =========================================================================
+    function evaluateIndicatorMetrics(data) {
+      const isCumulative = (data.metaAnual > data.metaMensal * 1.5);
+      let lastIndexWithData = -1;
+      data.mensalReal.forEach((val, idx) => {
+        if (val !== null && val !== undefined) lastIndexWithData = idx;
+      });
+      const mesesComDado = lastIndexWithData + 1;
+
+      let somaReal = 0;
+      const seriePrincipal = [];
+      const serieMetaPrincipal = [];
+      const serieMetaMensal = [];
+
+      data.mensalReal.forEach((val, idx) => {
+        const metaMes = data.metaMensal;
+        serieMetaMensal.push(metaMes);
+        if (idx <= lastIndexWithData && val !== null) {
+          somaReal += val;
+          if (isCumulative) {
+            seriePrincipal.push(somaReal);
+            serieMetaPrincipal.push(Number(((idx + 1) * metaMes).toFixed(2)));
+          } else {
+            const mediaAteMes = somaReal / (idx + 1);
+            seriePrincipal.push(Number(mediaAteMes.toFixed(2)));
+            serieMetaPrincipal.push(metaMes);
+          }
+        } else {
+          seriePrincipal.push(null);
+          if (isCumulative) {
+            serieMetaPrincipal.push(Number(((idx + 1) * metaMes).toFixed(2)));
+          } else {
+            serieMetaPrincipal.push(metaMes);
+          }
+        }
+      });
+
+      const valorPrincipal = isCumulative
+        ? somaReal
+        : (mesesComDado > 0 ? (somaReal / mesesComDado) : 0);
+
+      const esperadoAteAgora = isCumulative
+        ? (mesesComDado * data.metaMensal)
+        : data.metaMensal;
+
+      const saldo = valorPrincipal - esperadoAteAgora;
+      const atingiuMeta = data.menorMelhor ? (valorPrincipal <= esperadoAteAgora) : (valorPrincipal >= esperadoAteAgora);
+
+      return {
+        isCumulative, lastIndexWithData, mesesComDado, somaReal, valorPrincipal,
+        esperadoAteAgora, saldo, atingiuMeta, seriePrincipal, serieMetaPrincipal, serieMetaMensal
+      };
+    }
+
+    function renderAllSubtabsAndExecutive() {
+      const container = document.getElementById('pqavs-subtabs-container');
+      const execGrid = document.getElementById('exec-semaforo-grid');
+      if (!container || !execGrid) return;
+
+      container.innerHTML = '';
+      execGrid.innerHTML = '';
+
+      let totalMetasAtingidas = 0;
+      const keys = Object.keys(DATABASE);
+
+      keys.forEach(key => {
+        const item = DATABASE[key];
+        const m = evaluateIndicatorMetrics(item);
+        if (m.atingiuMeta) totalMetasAtingidas++;
+
+        const isActive = (key === currentIndicatorKey);
+        const dotColor = m.atingiuMeta ? 'bg-emerald-500' : 'bg-amber-500';
+
+        const btn = document.createElement('button');
+        btn.id = 'subtab-' + key;
+        btn.onclick = () => selectPqavsIndicator(key);
+        btn.className = isActive
+          ? 'px-2.5 py-2 rounded-lg text-left text-xs font-semibold transition-all bg-sky-600 text-white shadow-sm flex items-center justify-between gap-1.5 border border-sky-600'
+          : 'px-2.5 py-2 rounded-lg text-left text-xs font-medium transition-all bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-between gap-1.5 border border-slate-200/80 dark:border-slate-700/70';
+
+        btn.innerHTML = `
+          <div class="truncate">
+            <span class="font-mono text-[10px] ${isActive ? 'text-sky-100' : 'text-slate-400'} mr-1">#${item.num}</span>
+            <span>${item.curto}</span>
+          </div>
+          <span class="w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-white' : dotColor}"></span>
+        `;
+        container.appendChild(btn);
+
+        const cardExec = document.createElement('div');
+        cardExec.onclick = () => {
+          switchMainTab('pqavs');
+          selectPqavsIndicator(key);
+        };
+        cardExec.className = 'cursor-pointer p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-sky-400 dark:hover:border-sky-500 bg-slate-50/50 dark:bg-slate-800/40 transition flex flex-col justify-between gap-2';
+
+        const badgeColor = m.atingiuMeta
+          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+          : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
+
+        const valorFormatado = m.isCumulative
+          ? `${(m.saldo >= 0 ? '+' : '') + fmtNum(m.saldo, 2)}`
+          : `${fmtNum(m.valorPrincipal, 1)}%`;
+
+        const subtextoExec = m.isCumulative
+          ? `${fmtNum(m.valorPrincipal, 0)} acum. vs ${fmtNum(m.esperadoAteAgora, 1)} esp.`
+          : `Meta oficial: ${item.metaOficialTexto}`;
+
+        cardExec.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] font-mono font-semibold text-slate-400 uppercase">PQA-VS #${item.num}</span>
+              <h4 class="text-xs font-semibold text-slate-900 dark:text-white mt-0.5">${item.curto}</h4>
+            </div>
+            <span class="px-2 py-0.5 text-[11px] font-mono font-bold rounded ${badgeColor}">${valorFormatado}</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">${subtextoExec}</p>
+        `;
+        execGrid.appendChild(cardExec);
+      });
+
+      const percGlobal = (totalMetasAtingidas / keys.length) * 100;
+      const badgeEl = document.getElementById('exec-pqavs-badge');
+      const percEl = document.getElementById('exec-pqavs-perc');
+      if (badgeEl) badgeEl.textContent = `${totalMetasAtingidas} / ${keys.length} metas`;
+      if (percEl) percEl.textContent = `${fmtNum(percGlobal, 1)}%`;
+    }
+
+    function renderPqavs(indKey) {
+      currentIndicatorKey = indKey;
+      const data = DATABASE[indKey];
+      const m = evaluateIndicatorMetrics(data);
+
+      renderAllSubtabsAndExecutive();
+
+      const nomeUltimoMesExtenso = m.lastIndexWithData >= 0 ? MESES_EXTENSO[m.lastIndexWithData] : 'o momento';
+      const nomeUltimoMesAbrev = m.lastIndexWithData >= 0 ? MESES_ABREV[m.lastIndexWithData] : 'Atual';
+
+      if (m.isCumulative) {
+        const percAnual = data.metaAnual > 0 ? (m.valorPrincipal / data.metaAnual) * 100 : 0;
+        const percPeriodo = m.esperadoAteAgora > 0 ? (m.valorPrincipal / m.esperadoAteAgora) * 100 : 0;
+
+        document.getElementById('card1-title').textContent = 'Meta Anual Pactuada';
+        document.getElementById('kpi-meta-anual').textContent = fmtNum(data.metaAnual, 0);
+        document.getElementById('card1-footer-left').textContent = data.metaOficialTexto;
+
+        document.getElementById('card2-title').textContent = 'Meta Mensal Estimada';
+        document.getElementById('kpi-meta-mensal').textContent = fmtNum(data.metaMensal, 2);
+        document.getElementById('card2-footer-left').textContent = 'Média linear (12 meses)';
+        document.getElementById('card2-footer-right').textContent = 'Meta/mês';
+
+        document.getElementById('card3-title').textContent = 'Registros Acumulados';
+        document.getElementById('kpi-acumulado').textContent = fmtNum(m.valorPrincipal, 0);
+        document.getElementById('kpi-perc-anual').textContent = `(${fmtNum(percAnual, 1)}% do ano)`;
+        document.getElementById('kpi-progress-bar').style.width = `${Math.min(100, percAnual)}%`;
+        document.getElementById('kpi-esperado-label').textContent = `Esperado até ${nomeUltimoMesExtenso}:`;
+        document.getElementById('kpi-esperado-valor').textContent = fmtNum(m.esperadoAteAgora, 2);
+
+        document.getElementById('card4-title').textContent = 'Saldo de Registros (vs. Meta)';
+        document.getElementById('kpi-performance-periodo').textContent = `${fmtNum(percPeriodo, 1)}% da meta até ${nomeUltimoMesAbrev}`;
+
+        document.getElementById('chart1-title').textContent = 'Registros Acumulados vs. Meta Acumulada por Mês';
+        document.getElementById('chart2-title').textContent = 'Registros Mensais vs. Meta Mensal por Mês';
+        document.getElementById('th-col-mensal').textContent = 'Registros Mensais';
+        document.getElementById('th-col-meta-mes').textContent = 'Meta Mensal';
+        document.getElementById('th-col-acum').textContent = 'Acumulado Real';
+        document.getElementById('th-col-meta-acum').textContent = 'Meta Acumulada';
+        document.getElementById('th-col-saldo').textContent = 'Saldo Acumulado';
+      } else {
+        const sufixo = '%';
+        const progressoBarra = data.menorMelhor
+          ? (m.valorPrincipal <= data.metaAnual ? 100 : Math.max(15, 100 - (m.valorPrincipal - data.metaAnual) * 5))
+          : Math.min(100, (m.valorPrincipal / data.metaAnual) * 100);
+
+        document.getElementById('card1-title').textContent = data.menorMelhor ? 'Teto Máximo Pactuado' : 'Meta Oficial PQA-VS';
+        document.getElementById('kpi-meta-anual').textContent = fmtNum(data.metaAnual, 1) + sufixo;
+        document.getElementById('card1-footer-left').textContent = data.metaOficialTexto;
+
+        document.getElementById('card2-title').textContent = 'Parâmetro Mensal de Corte';
+        document.getElementById('kpi-meta-mensal').textContent = fmtNum(data.metaMensal, 1) + sufixo;
+        document.getElementById('card2-footer-left').textContent = data.menorMelhor ? 'Limite máximo mensal' : 'Piso mínimo mensal';
+        document.getElementById('card2-footer-right').textContent = 'Corte %';
+
+        document.getElementById('card3-title').textContent = 'Desempenho Médio no Ano';
+        document.getElementById('kpi-acumulado').textContent = fmtNum(m.valorPrincipal, 1) + sufixo;
+        document.getElementById('kpi-perc-anual').textContent = `(Jan–${nomeUltimoMesAbrev})`;
+        document.getElementById('kpi-progress-bar').style.width = `${progressoBarra}%`;
+        document.getElementById('kpi-esperado-label').textContent = `Meta até ${nomeUltimoMesExtenso}:`;
+        document.getElementById('kpi-esperado-valor').textContent = (data.menorMelhor ? '≤ ' : '≥ ') + fmtNum(m.esperadoAteAgora, 1) + sufixo;
+
+        document.getElementById('card4-title').textContent = 'Diferença vs. Meta (p.p.)';
+        document.getElementById('kpi-performance-periodo').textContent = data.menorMelhor ? 'Polaridade: Menor é melhor' : 'Polaridade: Maior é melhor';
+
+        document.getElementById('chart1-title').textContent = 'Média Acumulada (%) vs. Linha de Meta PQA-VS';
+        document.getElementById('chart2-title').textContent = 'Resultado Mensal (%) vs. Parâmetro Oficial';
+        document.getElementById('th-col-mensal').textContent = 'Resultado no Mês (%)';
+        document.getElementById('th-col-meta-mes').textContent = 'Parâmetro (%)';
+        document.getElementById('th-col-acum').textContent = 'Média Acumulada (%)';
+        document.getElementById('th-col-meta-acum').textContent = 'Meta Oficial (%)';
+        document.getElementById('th-col-saldo').textContent = 'Diferença (p.p.)';
+      }
+
+      const saldoEl = document.getElementById('kpi-saldo');
+      const saldoTag = document.getElementById('kpi-saldo-tag');
+      const saldoCard = document.getElementById('kpi-saldo-card');
+      const statusMetaEl = document.getElementById('kpi-status-meta');
+      const topBadge = document.getElementById('top-meta-badge');
+
+      const sufixoSaldo = m.isCumulative ? '' : ' p.p.';
+      saldoEl.textContent = (m.saldo >= 0 ? '+' : '') + fmtNum(m.saldo, 2) + sufixoSaldo;
+
+      if (m.atingiuMeta) {
+        saldoEl.className = 'text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums';
+        saldoTag.textContent = data.menorMelhor ? 'Redução OK' : 'Superávit';
+        saldoTag.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300';
+        saldoCard.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-emerald-200/90 dark:border-emerald-900/60 shadow-sm flex flex-col justify-between relative overflow-hidden';
+        statusMetaEl.textContent = 'Dentro da meta';
+        statusMetaEl.className = 'text-emerald-600 dark:text-emerald-400 font-semibold';
+        topBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-medium border border-emerald-200 dark:border-emerald-800/60';
+        topBadge.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Meta Atingida (Jan–${nomeUltimoMesAbrev})`;
+      } else {
+        saldoEl.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
+        saldoTag.textContent = data.menorMelhor ? 'Acima do Teto' : 'Déficit';
+        saldoTag.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
+        saldoCard.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between relative overflow-hidden';
+        statusMetaEl.textContent = 'Fora da meta';
+        statusMetaEl.className = 'text-rose-600 dark:text-rose-400 font-semibold';
+        topBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 font-medium border border-rose-200 dark:border-rose-800/60';
+        topBadge.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Atenção: Fora da Meta (Jan–${nomeUltimoMesAbrev})`;
+      }
+      lucide.createIcons();
+
+      document.getElementById('drawer-ind-title').textContent = data.titulo;
+      document.getElementById('drawer-ind-source').textContent = data.fonte;
+      document.getElementById('drawer-ind-target').textContent = data.metaOficialTexto;
+      document.getElementById('drawer-ind-formula').textContent = data.formula;
+      document.getElementById('drawer-ind-desc').textContent = data.descricao;
+
+      const anoSel = document.getElementById('filter-year')?.value || '2026';
+      const chartMode = document.getElementById('filter-chart-mode')?.value || 'adaptive';
+      const sliceEnd = (chartMode === 'adaptive' && m.lastIndexWithData >= 0) ? (m.lastIndexWithData + 1) : 12;
+
+      const labelFimExtenso = (chartMode === 'adaptive' && m.lastIndexWithData >= 0) ? MESES_EXTENSO[m.lastIndexWithData] : 'Dezembro';
+      const labelFimAbrev = (chartMode === 'adaptive' && m.lastIndexWithData >= 0) ? MESES_ABREV[m.lastIndexWithData] : 'Dez';
+
+      document.getElementById('chart1-subtitle').textContent = `Evolução de Janeiro a ${labelFimExtenso} de ${anoSel}`;
+      document.getElementById('chart1-badge').textContent = `Jan - ${labelFimAbrev}`;
+
+      document.getElementById('chart2-subtitle').textContent = `Comparativo mensal direto contra o parâmetro (${fmtNum(data.metaMensal, m.isCumulative ? 2 : 1)}${m.isCumulative ? '' : '%'})`;
+      document.getElementById('chart2-badge').textContent = `Jan - ${labelFimAbrev}`;
+
+      renderChartsPqavs(
+        MESES.slice(0, sliceEnd),
+        m.seriePrincipal.slice(0, sliceEnd),
+        m.serieMetaPrincipal.slice(0, sliceEnd),
+        data.mensalReal.slice(0, sliceEnd),
+        m.serieMetaMensal.slice(0, sliceEnd),
+        m.isCumulative
+      );
+
+      const tbody = document.getElementById('pqavs-table-body');
+      tbody.innerHTML = '';
+      let somaLoop = 0;
+      MESES.forEach((mesNome, i) => {
+        const realMes = data.mensalReal[i];
+        const metaMes = data.metaMensal;
+        if (realMes !== null) somaLoop += realMes;
+
+        const acumOuMedia = realMes !== null
+          ? (m.isCumulative ? somaLoop : (somaLoop / (i + 1)))
+          : null;
+        const metaAcumOuCorte = m.isCumulative ? ((i + 1) * metaMes) : metaMes;
+        const saldoMesAcum = realMes !== null ? (acumOuMedia - metaAcumOuCorte) : null;
+
+        const mesOk = realMes !== null
+          ? (data.menorMelhor ? (realMes <= metaMes) : (realMes >= metaMes))
+          : null;
+
+        const acumOk = saldoMesAcum !== null
+          ? (data.menorMelhor ? (saldoMesAcum <= 0) : (saldoMesAcum >= 0))
+          : null;
+
+        const statusBadge = realMes === null
+          ? '<span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-400">Aguardando</span>'
+          : (mesOk
+              ? '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">Dentro da Meta</span>'
+              : '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400">Fora no Mês</span>');
+
+        const sufixoTab = m.isCumulative ? '' : '%';
+        const casasReal = m.isCumulative ? 0 : 1;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-semibold uppercase text-slate-700 dark:text-slate-300">${mesNome}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-medium">${realMes !== null ? fmtNum(realMes, casasReal) + sufixoTab : '-'}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums text-slate-500">${fmtNum(metaMes, 2) + sufixoTab}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-semibold">${acumOuMedia !== null ? fmtNum(acumOuMedia, casasReal) + sufixoTab : '-'}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums text-slate-500">${realMes !== null ? fmtNum(metaAcumOuCorte, 2) + sufixoTab : '-'}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-semibold ${acumOk === true ? 'text-emerald-600 dark:text-emerald-400' : (acumOk === false ? 'text-rose-600' : '')}">
+            ${saldoMesAcum !== null ? (saldoMesAcum >= 0 ? '+' : '') + fmtNum(saldoMesAcum, 2) + (m.isCumulative ? '' : ' p.p.') : '-'}
+          </td>
+          <td class="py-2.5 px-4 text-center">${statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderChartsPqavs(labelsRecortados, serieAcumReal, serieMetaAcum, serieMensalReal, serieMetaMensal, isCumulative) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const gridColor = isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.25)';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      const ctx1 = document.getElementById('chartAcumulado').getContext('2d');
+      if (chartAcumuladoInstance) chartAcumuladoInstance.destroy();
+      chartAcumuladoInstance = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: labelsRecortados,
+          datasets: [
+            {
+              label: isCumulative ? 'Registros acumulados' : 'Média acumulada (%)',
+              data: serieAcumReal,
+              borderColor: '#0284c7',
+              backgroundColor: 'rgba(2, 132, 199, 0.12)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2.5,
+              pointRadius: 4,
+              pointBackgroundColor: '#0284c7',
+              spanGaps: false
+            },
+            {
+              label: isCumulative ? 'Meta Acumulada' : 'Meta Oficial PQA-VS (%)',
+              data: serieMetaAcum,
+              borderColor: isDark ? '#818cf8' : '#1e1b4b',
+              borderDash: [5, 4],
+              fill: false,
+              tension: 0,
+              borderWidth: 2,
+              pointRadius: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: textColor, usePointStyle: true, boxWidth: 8 } }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: textColor } },
+            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('chartMensal').getContext('2d');
+      if (chartMensalInstance) chartMensalInstance.destroy();
+      chartMensalInstance = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: labelsRecortados,
+          datasets: [
+            {
+              label: isCumulative ? 'Registros mensais' : 'Resultado mensal (%)',
+              data: serieMensalReal,
+              backgroundColor: '#0ea5e9',
+              borderRadius: 5,
+              barPercentage: 0.75
+            },
+            {
+              label: isCumulative ? 'Meta Mensal' : 'Parâmetro PQA-VS (%)',
+              data: serieMetaMensal,
+              backgroundColor: isDark ? '#312e81' : '#1e3a8a',
+              borderRadius: 5,
+              barPercentage: 0.75
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: textColor, usePointStyle: true, boxWidth: 8 } }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: textColor } },
+            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }
+          }
+        }
+      });
+    }
+
+    function initPropriosChart() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+      const gridColor = isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.25)';
+
+      const ctxDiag = document.getElementById('chartDiagramaControle').getContext('2d');
+      if (chartDiagramaInstance) chartDiagramaInstance.destroy();
+      chartDiagramaInstance = new Chart(ctxDiag, {
+        type: 'line',
+        data: {
+          labels: MESES,
+          datasets: [
+            {
+              label: 'Casos Notificados 2026',
+              data: [42, 65, 98, 120, 88, 45, 22, 18, 15, null, null, null],
+              borderColor: '#0284c7',
+              backgroundColor: '#0284c7',
+              borderWidth: 3,
+              tension: 0.3
+            },
+            {
+              label: 'Limite Epidêmico (Média + 2 DP)',
+              data: [60, 90, 140, 165, 120, 70, 40, 35, 30, 35, 45, 55],
+              borderColor: '#ef4444',
+              borderDash: [4, 4],
+              borderWidth: 2,
+              pointRadius: 0,
+              fill: false
+            },
+            {
+              label: 'Média Histórica Esperada',
+              data: [35, 50, 80, 95, 65, 35, 20, 15, 14, 18, 25, 30],
+              borderColor: '#10b981',
+              borderWidth: 2,
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: textColor } },
+            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }
+          }
+        }
+      });
+    }
+
+    function initMap() {
+      if (mapInstance) {
+        setTimeout(() => mapInstance.invalidateSize(), 150);
+        return;
+      }
+      mapInstance = L.map('map-container').setView([-15.4528, -47.6142], 13);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        maxZoom: 19
+      }).addTo(mapInstance);
+
+      const pontosSaude = [
+        { nome: 'Secretaria Municipal de Saúde / Vigilância', coords: [-15.4528, -47.6142], status: 'Sede Administrativa • 14 Indicadores PQA-VS + 25 eSF' },
+        { nome: 'UBS 02 Norte (CNES 2438607)', coords: [-15.4410, -47.6100], status: 'eSF 07 e eSF 22' },
+        { nome: 'UBS ESF 01 Qd 03 Setor Oeste (CNES 2440253)', coords: [-15.4560, -47.6240], status: 'eSF 01 • 657 atendimentos no mês' },
+        { nome: 'UBS ESF 10 Parque Itapuã I (CNES 2438593)', coords: [-15.4480, -47.5990], status: 'eSF 10 • 1º Lugar no Ranking Geral (970 atendimentos no mês)' },
+        { nome: 'UBS Jardim Paquetá (CNES 2437562)', coords: [-15.4650, -47.6180], status: 'eSF 11 e eSF 18' }
+      ];
+
+      pontosSaude.forEach(p => {
+        L.circleMarker(p.coords, {
+          radius: 9,
+          fillColor: '#0284c7',
+          color: '#ffffff',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.9
+        }).addTo(mapInstance).bindPopup(`<strong>${p.nome}</strong><br><span style="font-size:12px">${p.status}</span>`);
+      });
+    }
+
+    function handleGeoJSONUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const geojson = JSON.parse(e.target.result);
+          if (geoJsonLayer) mapInstance.removeLayer(geoJsonLayer);
+          geoJsonLayer = L.geoJSON(geojson, {
+            style: {
+              color: '#0284c7',
+              weight: 2,
+              fillColor: '#38bdf8',
+              fillOpacity: 0.35
+            },
+            onEachFeature: function(feature, layer) {
+              if (feature.properties) {
+                const props = Object.entries(feature.properties)
+                  .map(([k, v]) => `<b>${k}:</b> ${v}`)
+                  .join('<br>');
+                layer.bindPopup(props);
+              }
+            }
+          }).addTo(mapInstance);
+          mapInstance.fitBounds(geoJsonLayer.getBounds());
+        } catch (err) {
+          alert('Erro ao ler o arquivo GeoJSON. Verifique se foi exportado em WGS84 (EPSG:4326) no QGIS.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function switchMainTab(tabId) {
+      const tabs = ['visao-geral', 'pqavs', 'aps', 'proprios', 'mapas'];
+      tabs.forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        const btn = document.getElementById('nav-' + t);
+        btn.className = 'nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800';
+      });
+
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      const activeBtn = document.getElementById('nav-' + tabId);
+      activeBtn.className = 'nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400';
+
+      const titles = {
+        'visao-geral': 'Visão Executiva — Sala de Situação (Planaltina/GO)',
+        'pqavs': 'Vigilância em Saúde (PQA-VS)',
+        'aps': 'Atenção Primária à Saúde (APS • Portaria GM/MS Nº 3.493/2024)',
+        'proprios': 'Indicadores Próprios Municipais',
+        'mapas': 'Inteligência Geográfica (QGIS / GeoJSON)'
+      };
+      const subtitles = {
+        'visao-geral': 'Síntese Estratégica PQA-VS + Atenção Primária + Arboviroses',
+        'pqavs': 'Portaria GM/MS Nº 6.878/2025 • 14 Indicadores Pactuados',
+        'aps': '25 eSF em 22 UBS • Diagnóstico de Boas Práticas & Ranking Geral (25 eSF)',
+        'proprios': 'Monitoramento Sazonal e Diagrama de Controle Epidemiológico',
+        'mapas': 'Territorialização das 22 UBS / 25 eSF e Análise Espacial'
+      };
+      document.getElementById('page-title').textContent = titles[tabId];
+      document.getElementById('page-subtitle').textContent = subtitles[tabId];
+
+      if (tabId === 'visao-geral') renderAllSubtabsAndExecutive();
+      if (tabId === 'aps') renderApsView();
+      if (tabId === 'proprios') initPropriosChart();
+      if (tabId === 'mapas') initMap();
+    }
+
+    function selectPqavsIndicator(indKey) {
+      renderPqavs(indKey);
+    }
+
+    function toggleDrawer(open) {
+      const drawer = document.getElementById('info-drawer');
+      const backdrop = document.getElementById('drawer-backdrop');
+      if (open) {
+        drawer.classList.remove('translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        drawer.classList.add('translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      renderPqavs(currentIndicatorKey);
+      if (!document.getElementById('tab-aps').classList.contains('hidden')) renderApsView();
+      if (!document.getElementById('tab-proprios').classList.contains('hidden')) initPropriosChart();
+    }
+
+    function openSheetsModal() {
+      const m = document.getElementById('sheets-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function closeSheetsModal() {
+      const m = document.getElementById('sheets-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    function downloadTemplateCSV() {
+      const header = 'indicador,titulo,meta_anual,meta_mensal,jan,fev,mar,abr,mai,jun,jul,ago,set,out,nov,dez';
+      const rows = Object.keys(DATABASE).map(k => {
+        const d = DATABASE[k];
+        const mesesStr = d.mensalReal.map(v => v !== null && v !== undefined ? v : '').join(',');
+        return `${k},${d.titulo},${d.metaAnual},${d.metaMensal},${mesesStr}`;
+      });
+      const csv = [header, ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'planilha_14_indicadores_pqavs_planaltina.csv';
+      a.click();
+    }
+
+    function exportCurrentCSV() {
+      downloadTemplateCSV();
+    }
+
+    async function connectGoogleSheets(silent = false) {
+      const inputEl = document.getElementById('sheets-csv-url');
+      const url = (inputEl?.value || DEFAULT_SHEETS_CSV_URL).trim();
+      if (!url) {
+        if (!silent) alert('Cole a URL pública CSV gerada pelo Google Sheets.');
+        return;
+      }
+      try {
+        const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        const res = await fetch(cacheBusterUrl);
+        const text = await res.text();
+        const lines = text.trim().split(/\r?\n/);
+
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+        const colMap = {};
+        headers.forEach((h, idx) => { colMap[h] = idx; });
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = [];
+          let current = '';
+          let inQuotes = false;
+          for (let char of lines[i]) {
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              cols.push(current);
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          cols.push(current);
+
+          const key = (cols[colMap['indicador']] || '').trim().toLowerCase();
+          if (key && DATABASE[key]) {
+            if (colMap['titulo'] !== undefined && cols[colMap['titulo']]?.trim()) {
+              DATABASE[key].titulo = cols[colMap['titulo']].trim();
+            }
+            if (colMap['meta_anual'] !== undefined) {
+              DATABASE[key].metaAnual = parseCSVNumber(cols[colMap['meta_anual']]) ?? DATABASE[key].metaAnual;
+            }
+            if (colMap['meta_mensal'] !== undefined) {
+              DATABASE[key].metaMensal = parseCSVNumber(cols[colMap['meta_mensal']]) ?? DATABASE[key].metaMensal;
+            }
+
+            DATABASE[key].mensalReal = MESES.map(mes => {
+              if (colMap[mes] !== undefined) {
+                return parseCSVNumber(cols[colMap[mes]]);
+              }
+              return null;
+            });
+          }
+        }
+        localStorage.setItem('sms_planaltina_sheets_url', url);
+        document.getElementById('data-source-label').textContent = 'Google Sheets (Sincronizado)';
+        renderPqavs(currentIndicatorKey);
+        if (!silent) closeSheetsModal();
+      } catch (e) {
+        console.warn("Aviso na leitura automática do CSV:", e);
+        if (!silent) alert('Erro ao processar os dados da planilha. Verifique se o link está publicado como CSV.');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUrl = localStorage.getItem('sms_planaltina_sheets_url') || DEFAULT_SHEETS_CSV_URL;
+      const inputEl = document.getElementById('sheets-csv-url');
+      if (inputEl) inputEl.value = savedUrl;
+      renderPqavs('sinasc');
+      populateApsTeamDropdown();
+      connectGoogleSheets(true);
+    });
+  </script>
+</body>
+</html>
