@@ -384,8 +384,8 @@
                 <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Atenção Primária (APS)</span>
                 <span class="text-xs font-mono px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">25 eSF em 22 UBS</span>
               </div>
-              <div class="text-2xl font-bold tabular-nums mb-1">16.092 atend./mês</div>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Volume mensal consolidado da rede de Atenção Primária (4.260 programados e 11.832 espontâneos).</p>
+              <div class="text-2xl font-bold tabular-nums mb-1">11.832 atend./mês</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Volume mensal consolidado da rede de Atenção Primária (4.260 programados e 7.572 espontâneos).</p>
             </div>
 
             <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -1219,18 +1219,23 @@
 
     function getActiveApsTeams() {
       return APS_RAW_TEAMS.map(t => {
-        const totalAtend = t.prog + t.esp;
-        const propProg = Number(((t.prog / totalAtend) * 100).toFixed(2));
+        // No relatório do e-Gestor (C1), 'prog' é o Numerador (Programada) e 'esp' na base bruta é o Denominador (Total)
+        const totalAtend = t.esp;
+        const espReal = Math.max(0, totalAtend - t.prog);
         const scoreMaisAcesso = t.scoreMaisAcesso;
+        const propProg = scoreMaisAcesso; // A pontuação oficial já é a % de Demanda Programada
+        const propEsp = Number((100 - propProg).toFixed(2));
         const fator = t.scoreGestantes / 35.55;
         const praticasGest = t.gestPraticas || [47, 29, 25, 22, 19, 17, 16, 13, 11, 8, 5].map(v => Math.max(2, Math.round(v * fator)));
 
         return {
           ...t,
+          esp: espReal,
           totalAtend,
           labelDuplo: `eSF ${t.id.replace('ESF ', '')} — ${t.bairro}`,
           scoreMaisAcesso,
           propProg,
+          propEsp,
           praticasGest,
           scoresPorEixo: {
             mais_acesso: scoreMaisAcesso,
@@ -1250,28 +1255,53 @@
       if (eixoKey === 'mais_acesso') {
         // C1: Métrica de Equilíbrio (>50 e <=70 Ótimo | >30 e <=50 Bom | >10 e <=30 Suficiente | <=10 ou >70 Regular)
         if (score > 50 && score <= 70) {
-          return { label: 'Ótimo', valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
+          return { label: 'Ótimo', tier: 4, valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
         } else if (score > 30 && score <= 50) {
-          return { label: 'Bom', valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
+          return { label: 'Bom', tier: 3, valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
         } else if (score > 10 && score <= 30) {
-          return { label: 'Suficiente', valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+          return { label: 'Suficiente', tier: 2, valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
         } else if (score > 70) {
-          return { label: 'Regular (>70%)', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+          return { label: 'Regular (>70%)', tier: 1, valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
         } else {
-          return { label: 'Regular (≤10%)', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+          return { label: 'Regular (≤10%)', tier: 1, valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
         }
       } else {
         // C3 e demais: Métrica Linear (>75 e <=100 Ótimo | >50 e <=75 Bom | >25 e <=50 Suficiente | <=25 Regular)
         if (score > 75) {
-          return { label: 'Ótimo', valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
+          return { label: 'Ótimo', tier: 4, valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
         } else if (score > 50 && score <= 75) {
-          return { label: 'Bom', valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
+          return { label: 'Bom', tier: 3, valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
         } else if (score > 25 && score <= 50) {
-          return { label: 'Suficiente', valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+          return { label: 'Suficiente', tier: 2, valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
         } else {
-          return { label: 'Regular', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+          return { label: 'Regular', tier: 1, valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
         }
       }
+    }
+
+    // Ordena por Faixa de Conceito no Mais Acesso (Ótimo -> Bom -> Suficiente -> Regular) e linearmente nos demais eixos
+    function sortTeamsByAxis(teams, eixoKey) {
+      return [...teams].sort((a, b) => {
+        const sA = a.scoresPorEixo[eixoKey];
+        const sB = b.scoresPorEixo[eixoKey];
+        if (eixoKey !== 'mais_acesso') return sB - sA;
+
+        const cA = classifyPortaria3493(sA, 'mais_acesso');
+        const cB = classifyPortaria3493(sB, 'mais_acesso');
+        if (cB.tier !== cA.tier) return cB.tier - cA.tier; // 1º Critério: Faixa (Ótimo > Bom > Suficiente > Regular)
+
+        if (cA.tier === 4) {
+          // Dentro do Ótimo (>50 a 70), ordena pela menor distância ao centro ideal de 60% (eSF 04 em 1º, eSF 19 em 2º)
+          return Math.abs(sA - 60) - Math.abs(sB - 60);
+        }
+        if (cA.tier === 1) {
+          // Dentro do Regular (<=10 ou >70), ordena por quem desviou menos do limite
+          const distA = sA > 70 ? (sA - 70) : (10 - sA);
+          const distB = sB > 70 ? (sB - 70) : (10 - sB);
+          return distA - distB;
+        }
+        return sB - sA; // Dentro de Bom e Suficiente, maior nota vem primeiro
+      });
     }
 
     let currentIndicatorKey = 'sinasc';
@@ -1430,9 +1460,11 @@
       document.getElementById('drawer-ind-formula').textContent = metaEixo.formula;
       document.getElementById('drawer-ind-desc').textContent = metaEixo.desc;
 
-      const rankedByAxis = [...activeTeams].sort((a, b) => b.scoresPorEixo[eixoKey] - a.scoresPorEixo[eixoKey]);
-      const mediaMunicipalPontuacao = rankedByAxis.reduce((acc, t) => acc + t.scoresPorEixo[eixoKey], 0) / rankedByAxis.length;
-      const mediaPropProgMunicipal = activeTeams.reduce((acc, t) => acc + t.propProg, 0) / activeTeams.length;
+      const rankedByAxis = sortTeamsByAxis(activeTeams, eixoKey);
+      const mediaMunicipalPontuacao = activeTeams.reduce((acc, t) => acc + t.scoresPorEixo[eixoKey], 0) / activeTeams.length;
+      const mediaPropProgMunicipal = mediaMunicipalPontuacao; // No C1, a pontuação já é a % de Demanda Programada (36,32%)
+      const mediaPropEspMunicipal = 100 - mediaPropProgMunicipal; // Média de Demanda Espontânea nas 25 eSF (63,68%)
+      const totalEspMunicipal = activeTeams.reduce((acc, t) => acc + t.esp, 0);
 
       let targetEntity = null;
       let rankPosText = '';
@@ -1440,6 +1472,7 @@
       if (eqSel === 'MUNICIPIO') {
         const sumProg = activeTeams.reduce((a, t) => a + t.prog, 0);
         const sumEsp = activeTeams.reduce((a, t) => a + t.esp, 0);
+        const sumTotal = activeTeams.reduce((a, t) => a + t.totalAtend, 0);
         const sumGestantes = activeTeams.reduce((a, t) => a + (t.totalGestantes || 0), 0);
         const sumPraticas = LABELS_GESTANTES_11.map((_, idx) => activeTeams.reduce((a, t) => a + t.praticasGest[idx], 0));
         targetEntity = {
@@ -1447,9 +1480,10 @@
           labelDuplo: 'Município de Planaltina/GO (25 eSF)',
           prog: sumProg,
           esp: sumEsp,
-          totalAtend: sumProg + sumEsp,
+          totalAtend: sumTotal,
           totalGestantes: sumGestantes,
           propProg: Number(mediaPropProgMunicipal.toFixed(2)),
+          propEsp: Number(mediaPropEspMunicipal.toFixed(2)),
           scoreAtual: Number(mediaMunicipalPontuacao.toFixed(2)),
           praticasGest: sumPraticas
         };
@@ -1468,21 +1502,22 @@
       const sortedPractices = [...practices].sort((a, b) => b.val - a.val);
 
       // =====================================================================
-      // CARD 1: PONTUAÇÃO DE FATO + CLASSIFICAÇÃO POR EIXO
+      // CARD 1: PONTUAÇÃO (% NO MAIS ACESSO) + CLASSIFICAÇÃO POR EIXO
       // =====================================================================
       const faixa = classifyPortaria3493(targetEntity.scoreAtual, eixoKey);
+      const sufixoCard1 = eixoKey === 'mais_acesso' ? '%' : '';
       document.getElementById('aps-kpi1-title').textContent = eixoKey === 'mais_acesso'
-        ? 'Pontuação do Eixo (Mais Acesso)'
+        ? 'Pontuação / % Demanda Programada'
         : 'Pontuação / Escore do Eixo';
-      document.getElementById('aps-kpi1-value').textContent = fmtNum(targetEntity.scoreAtual, 2);
+      document.getElementById('aps-kpi1-value').textContent = fmtNum(targetEntity.scoreAtual, 2) + sufixoCard1;
       document.getElementById('aps-kpi1-rank').textContent = rankPosText;
       const badge1 = document.getElementById('aps-kpi1-badge');
       badge1.textContent = faixa.label;
       badge1.className = `text-[11px] font-semibold px-2 py-0.5 rounded-full ${faixa.badgeClass}`;
-      document.getElementById('aps-kpi1-footer-left').textContent = `Média Planaltina: ${fmtNum(mediaMunicipalPontuacao, 2)}`;
+      document.getElementById('aps-kpi1-footer-left').textContent = `Média Planaltina: ${fmtNum(mediaMunicipalPontuacao, 2)}${sufixoCard1}`;
 
       // =====================================================================
-      // CARD 2: TESTAGEM SÍFILIS/HIV (GESTAÇÃO) OU DEMANDA PROG VS ESP
+      // CARD 2: DEMANDA ESPONTÂNEA (MAIS ACESSO) OU SÍFILIS/HIV (GESTAÇÃO)
       // =====================================================================
       const kpi2IconWrap = document.getElementById('aps-kpi2-icon-wrap');
       const kpi2FooterRight = document.getElementById('aps-kpi2-footer-right');
@@ -1501,13 +1536,14 @@
         kpi2IconWrap.innerHTML = `<i data-lucide="flask-conical" class="w-4 h-4"></i>`;
         kpi2FooterRight.textContent = `${fmtNum(perc1Tri, 0)}% / ${fmtNum(perc3Tri, 0)}% do total`;
       } else {
-        const propProg = ((targetEntity.prog / (targetEntity.prog + targetEntity.esp)) * 100);
-        document.getElementById('aps-kpi2-title').textContent = 'Demanda Programada vs. Espontânea';
-        document.getElementById('aps-kpi2-value').textContent = `${fmtNum(propProg, 2)}%`;
-        document.getElementById('aps-kpi2-sub').textContent = `(${fmtNum(targetEntity.prog, 0)} / ${fmtNum(targetEntity.totalAtend, 0)})`;
-        document.getElementById('aps-kpi2-footer-left').textContent = `Programada: ${fmtNum(targetEntity.prog, 0)} • Espontânea: ${fmtNum(targetEntity.esp, 0)}`;
-        kpi2IconWrap.innerHTML = `<i data-lucide="calendar-check" class="w-4 h-4"></i>`;
-        kpi2FooterRight.textContent = `Média Planaltina: ${fmtNum(mediaPropProgMunicipal, 2)}%`;
+        // Exibe o volume e a % real de Demanda Espontânea da unidade + média e total municipal de espontânea
+        const percEspUnidade = 100 - targetEntity.propProg;
+        document.getElementById('aps-kpi2-title').textContent = 'Demanda Espontânea (Livre Demanda)';
+        document.getElementById('aps-kpi2-value').textContent = `${fmtNum(targetEntity.esp, 0)}`;
+        document.getElementById('aps-kpi2-sub').textContent = `(${fmtNum(percEspUnidade, 2)}% do total)`;
+        document.getElementById('aps-kpi2-footer-left').textContent = `Rede (25 eSF): ${fmtNum(totalEspMunicipal, 0)} espont.`;
+        kpi2IconWrap.innerHTML = `<i data-lucide="door-open" class="w-4 h-4"></i>`;
+        kpi2FooterRight.textContent = `Média Planaltina: ${fmtNum(mediaPropEspMunicipal, 2)}%`;
       }
 
       // =====================================================================
@@ -1522,7 +1558,8 @@
       const kpi4Footer = document.getElementById('aps-kpi4-footer');
 
       if (eixoKey === 'mais_acesso') {
-        document.getElementById('aps-kpi3-title').textContent = 'Volume Total de Atendimentos';
+        // Card 3: Denominador Oficial (Total de Atendimentos = Programada + Espontânea)
+        document.getElementById('aps-kpi3-title').textContent = 'Volume Total de Atendimentos (DN)';
         document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalAtend, 0);
         kpi3Badge.textContent = 'Prog. + Espontânea';
         kpi3IconWrap.innerHTML = `<i data-lucide="layers" class="w-4 h-4"></i>`;
@@ -1531,7 +1568,6 @@
         const scoreMA = targetEntity.scoreAtual;
 
         if (scoreMA > 50 && scoreMA <= 70) {
-          // Dentro da Faixa Ótima (> 50% e <= 70%)
           const margemAcimaPiso = scoreMA - 50;
           const margemAteTeto = 70 - scoreMA;
           document.getElementById('aps-kpi4-title').textContent = 'Status da Faixa de Equilíbrio';
@@ -1545,9 +1581,9 @@
           kpi4Footer.className = 'truncate font-medium text-emerald-700 dark:text-emerald-400';
           kpi4Footer.textContent = `Equilíbrio ideal atingido • Margem até teto (70%): ${fmtNum(margemAteTeto, 2)} p.p.`;
         } else if (scoreMA > 70) {
-          // Passou de 70%: Caiu para Regular (Agenda Engessada)
           const excessoPP = scoreMA - 70;
-          const excessoProg = Math.max(1, targetEntity.prog - Math.floor(0.70 * targetEntity.esp));
+          const limite70Prog = Math.floor(0.70 * targetEntity.totalAtend);
+          const excessoProg = Math.max(1, targetEntity.prog - limite70Prog);
           document.getElementById('aps-kpi4-title').textContent = 'Alerta: Agenda Engessada (> 70%)';
           kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
           kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
@@ -1557,11 +1593,11 @@
           kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
           kpi4Badge.textContent = 'Caiu p/ Regular (>70%)';
           kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
-          kpi4Footer.textContent = `Ultrapassou teto de 70% (+${fmtNum(excessoProg, 0)} prog. acima do limite de equilíbrio)`;
+          kpi4Footer.textContent = `Ultrapassou teto de 70% (+${fmtNum(excessoProg, 0)} prog. acima do limite de ${fmtNum(limite70Prog, 0)})`;
         } else {
-          // Abaixo ou igual a 50%: Precisa subir para > 50% para atingir Ótimo
           const faltaPP = 50 - scoreMA;
-          const atendNecessarios = Math.max(1, (Math.floor(0.50 * targetEntity.esp) + 1) - targetEntity.prog);
+          const piso50Prog = Math.floor(0.50 * targetEntity.totalAtend) + 1;
+          const atendNecessarios = Math.max(1, piso50Prog - targetEntity.prog);
           document.getElementById('aps-kpi4-title').textContent = 'Distância p/ Faixa Ótima (> 50%)';
           kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
           kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
@@ -1569,7 +1605,7 @@
           kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
           kpi4Value.textContent = `-${fmtNum(faltaPP, 2)} p.p.`;
           kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
-          kpi4Badge.textContent = `Agendar +${fmtNum(atendNecessarios, 0)} prog.`;
+          kpi4Badge.textContent = `Converter +${fmtNum(atendNecessarios, 0)} prog.`;
           kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
           kpi4Footer.textContent = `Faltam ${fmtNum(faltaPP, 2)} p.p. (+${fmtNum(atendNecessarios, 0)} atend. prog.) p/ Faixa Ótima (> 50%)`;
         }
@@ -1689,13 +1725,18 @@
         }
       });
 
-      // Plugin para desenhar os números em cima das barras verticais do Mini Ranking
+      const rightSubtitle = document.getElementById('aps-chart-right-subtitle');
+      if (rightSubtitle) {
+        rightSubtitle.textContent = eixoKey === 'mais_acesso'
+          ? 'Ordenado por Faixa de Conceito (Verde: Ótimo • Azul: Bom • Âmbar: Suficiente • Vermelho: Regular)'
+          : 'Ordenado por pontuação e colorido conforme faixa da Portaria (Equipe atual destacada com borda)';
+      }
+
       const verticalBarValueLabelsPlugin = {
         id: 'verticalBarValueLabels',
         afterDatasetsDraw(chart) {
           const { ctx } = chart;
           ctx.save();
-          ctx.font = '600 9.5px "JetBrains Mono", monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
 
@@ -1704,7 +1745,8 @@
             const rawVal = chart.data.datasets[0].data[index];
             if (rawVal === null || rawVal === undefined) return;
             const isSel = rankedTeams[index]?.id === selectedId;
-            ctx.fillStyle = isSel ? '#0284c7' : (isDark ? '#cbd5e1' : '#475569');
+            ctx.font = isSel ? '700 10px "JetBrains Mono", monospace' : '600 9px "JetBrains Mono", monospace';
+            ctx.fillStyle = isSel ? (isDark ? '#ffffff' : '#0f172a') : (isDark ? '#cbd5e1' : '#475569');
             const formatted = Number(rawVal).toLocaleString('pt-BR', {
               minimumFractionDigits: 1,
               maximumFractionDigits: 1
@@ -1728,7 +1770,12 @@
           datasets: [{
             label: 'Pontuação no Eixo',
             data: rankedTeams.map(t => t.scoresPorEixo[eixoKey]),
-            backgroundColor: rankedTeams.map(t => (t.id === selectedId) ? '#0284c7' : (isDark ? '#334155' : '#94a3b8')),
+            backgroundColor: rankedTeams.map(t => {
+              const c = classifyPortaria3493(t.scoresPorEixo[eixoKey], eixoKey).barColor;
+              return (t.id === selectedId || selectedId === 'MUNICIPIO') ? c : c + '99'; // Equipe selecionada 100% sólida; demais 60% opacidade
+            }),
+            borderColor: rankedTeams.map(t => (t.id === selectedId) ? (isDark ? '#ffffff' : '#0f172a') : 'transparent'),
+            borderWidth: rankedTeams.map(t => (t.id === selectedId) ? 2.5 : 0),
             borderRadius: 4
           }]
         },
@@ -1755,7 +1802,7 @@
       const thPerc = document.getElementById('aps-diag-th-perc');
       if (thPerc) {
         thPerc.textContent = eixoKey === 'mais_acesso'
-          ? '% sobre Total de Atendimentos'
+          ? '% sobre Total de Atendimentos (DN)'
           : (eixoKey === 'gestacao' ? '% sobre Total de Gestantes' : '% sobre 1ª Consulta / Base');
       }
 
@@ -1777,7 +1824,7 @@
               badge = '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Ampliar Agenda Programada (Meta >50%)</span>';
             }
           } else {
-            badge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300">Acolhimento / Demanda Aguda</span>';
+            badge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300">Acolhimento / Livre Demanda</span>';
           }
         } else {
           if (idx === 0) {
@@ -1801,6 +1848,117 @@
           <td class="py-2.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">${fmtNum(p.val, 0)}</td>
           <td class="py-2.5 px-4 text-right tabular-nums text-slate-500">${fmtNum(percRel, 2)}%</td>
           <td class="py-2.5 px-4 text-center">${badge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderApsRankingGeralAtendimentos(activeTeams, eixoKey, mediaPropProgMunicipal) {
+      const metaEixo = APS_EIXOS_META[eixoKey];
+      const rankedByScore = sortTeamsByAxis(activeTeams, eixoKey);
+      const sufixoScore = eixoKey === 'mais_acesso' ? '%' : '';
+
+      const top3 = rankedByScore.slice(0, 3);
+      top3.forEach((t, i) => {
+        const idx = i + 1;
+        const c = classifyPortaria3493(t.scoresPorEixo[eixoKey], eixoKey);
+        document.getElementById(`podium-${idx}-name`).textContent = t.labelDuplo;
+        document.getElementById(`podium-${idx}-cnes`).textContent = `CNES ${t.cnes} • Faixa: ${c.label}`;
+        document.getElementById(`podium-${idx}-score`).textContent = fmtNum(t.scoresPorEixo[eixoKey], 2) + sufixoScore;
+        document.getElementById(`podium-${idx}-class`).textContent = `${fmtNum(t.prog, 0)} prog. • ${fmtNum(t.esp, 0)} esp. (Total: ${fmtNum(t.totalAtend, 0)})`;
+      });
+
+      const chartTitleEl = document.getElementById('aps-full-ranking-chart-title');
+      if (chartTitleEl) chartTitleEl.textContent = `Ranking Geral (25 eSF) — ${metaEixo.titulo}`;
+
+      const totalProgRede = rankedByScore.reduce((acc, t) => acc + t.prog, 0);
+      const totalEspRede = rankedByScore.reduce((acc, t) => acc + t.esp, 0);
+      const totalGeralRede = rankedByScore.reduce((acc, t) => acc + t.totalAtend, 0);
+      const mediaPorEquipe = totalGeralRede / rankedByScore.length;
+
+      document.getElementById('rank-total-geral').textContent = fmtNum(totalGeralRede, 0);
+      document.getElementById('rank-media-equipe').textContent = fmtNum(mediaPorEquipe, 1);
+      document.getElementById('rank-total-prog').textContent = fmtNum(totalProgRede, 0);
+      document.getElementById('rank-perc-prog').textContent = `Média Planaltina: ${fmtNum(mediaPropProgMunicipal, 2)}%`;
+      document.getElementById('rank-total-esp').textContent = fmtNum(totalEspRede, 0);
+      document.getElementById('rank-perc-esp').textContent = `Média Planaltina: ${fmtNum(100 - mediaPropProgMunicipal, 2)}%`;
+
+      const ctxFull = document.getElementById('chartApsFullRanking').getContext('2d');
+      if (chartApsFullRankingInstance) chartApsFullRankingInstance.destroy();
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#cbd5e1' : '#334155';
+      const gridColor = isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.25)';
+      const maxScore = Math.max(...rankedByScore.map(t => t.scoresPorEixo[eixoKey]), 1);
+
+      chartApsFullRankingInstance = new Chart(ctxFull, {
+        type: 'bar',
+        plugins: [horizontalBarValueLabelsPlugin],
+        data: {
+          labels: rankedByScore.map((t, i) => `${i + 1}º • ${t.labelDuplo} (${classifyPortaria3493(t.scoresPorEixo[eixoKey], eixoKey).label})`),
+          datasets: [{
+            label: 'Pontuação no Eixo',
+            data: rankedByScore.map(t => t.scoresPorEixo[eixoKey]),
+            backgroundColor: rankedByScore.map(t => classifyPortaria3493(t.scoresPorEixo[eixoKey], eixoKey).barColor),
+            borderRadius: 5,
+            barPercentage: 0.78
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: { right: 56 }
+          },
+          plugins: {
+            legend: { display: false },
+            horizontalBarValueLabels: {
+              enabled: true,
+              decimals: 2,
+              suffix: sufixoScore
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              suggestedMax: Math.ceil(maxScore * 1.12),
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            },
+            y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11, weight: '500' } } }
+          }
+        }
+      });
+
+      const tbody = document.getElementById('aps-ranking-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      rankedByScore.forEach((t, idx) => {
+        const pos = idx + 1;
+        const posMedal = pos === 1 ? '🥇 1º' : (pos === 2 ? '🥈 2º' : (pos === 3 ? '🥉 3º' : `${pos}º`));
+        const c = classifyPortaria3493(t.scoresPorEixo[eixoKey], eixoKey);
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-mono font-bold text-slate-700 dark:text-slate-300">${posMedal}</td>
+          <td class="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">${t.labelDuplo}</td>
+          <td class="py-2.5 px-4 font-mono text-slate-500">${t.cnes}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-bold text-sky-700 dark:text-sky-400 text-sm">${fmtNum(t.totalAtend, 0)}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-medium text-emerald-700 dark:text-emerald-400">${fmtNum(t.prog, 0)}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300">${fmtNum(t.esp, 0)}</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-mono text-slate-500">${fmtNum(t.propProg, 2)}%</td>
+          <td class="py-2.5 px-4 text-right tabular-nums font-semibold">
+            ${fmtNum(t.scoresPorEixo[eixoKey], 2)}${sufixoScore}
+            <span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold ${c.badgeClass}">${c.label}</span>
+          </td>
+          <td class="py-2.5 px-4 text-center">
+            <button onclick="openTeamRaioX('${t.id}')" class="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 font-semibold text-[11px] transition">
+              Abrir Raio-X
+            </button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
