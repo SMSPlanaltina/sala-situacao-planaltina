@@ -472,6 +472,7 @@
                 </div>
               </div>
             </div>
+          </div>
 
           <!-- ==========================================
                SUB-VIEW APS 1: DIAGNÓSTICO POR EQUIPE / UBS
@@ -1343,56 +1344,57 @@
     function getPracticesForAxis(eixoKey, targetEntity) {
       if (eixoKey === 'gestacao') {
         return LABELS_GESTANTES_11.map((label, i) => ({
+          num: i + 1,
           label,
           val: targetEntity.praticasGest[i]
         }));
       } else if (eixoKey === 'mais_acesso') {
         return [
-          { label: 'Atendimentos de Demanda Programada (Cuidado Continuado)', val: targetEntity.prog },
-          { label: 'Atendimentos de Demanda Espontânea (Agudos/Acolhimento)', val: targetEntity.esp }
+          { num: 1, label: 'Atendimentos de Demanda Programada (Cuidado Continuado)', val: targetEntity.prog },
+          { num: 2, label: 'Atendimentos de Demanda Espontânea (Agudos/Acolhimento)', val: targetEntity.esp }
         ];
       } else {
         const base = targetEntity.praticasGest[0] || 40;
         const mapas = {
           infantil: [
-            { label: '1ª Consulta de Puericultura até o 30º dia de vida', val: Math.round(base * 0.92) },
-            { label: '≥ 09 Consultas de Puericultura até 2 anos de idade', val: Math.round(base * 0.74) },
-            { label: '≥ 09 Registros Simultâneos de Peso e Altura', val: Math.round(base * 0.78) },
-            { label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 0.85) },
-            { label: 'Vacinas Penta, Polio, Pneumo 10v e Tríplice Viral registradas', val: Math.round(base * 0.68) }
+            { num: 1, label: '1ª Consulta de Puericultura até o 30º dia de vida', val: Math.round(base * 0.92) },
+            { num: 2, label: '≥ 09 Consultas de Puericultura até 2 anos de idade', val: Math.round(base * 0.74) },
+            { num: 3, label: '≥ 09 Registros Simultâneos de Peso e Altura', val: Math.round(base * 0.78) },
+            { num: 4, label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 0.85) },
+            { num: 5, label: 'Vacinas Penta, Polio, Pneumo 10v e Tríplice Viral registradas', val: Math.round(base * 0.68) }
           ],
           hipertensao: [
-            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 3.4) },
-            { label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 3.2) },
-            { label: '≥ 01 Registro Simultâneo de Peso e Altura no ano', val: Math.round(base * 2.8) },
-            { label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 2.5) }
+            { num: 1, label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 3.4) },
+            { num: 2, label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 3.2) },
+            { num: 3, label: '≥ 01 Registro Simultâneo de Peso e Altura no ano', val: Math.round(base * 2.8) },
+            { num: 4, label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 2.5) }
           ],
           diabetes: [
-            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 1.8) },
-            { label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 1.7) },
-            { label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 1.5) },
-            { label: '≥ 01 Registro de Solicitação/Avaliação de Hemoglobina Glicada (HbA1c)', val: Math.round(base * 1.2) },
-            { label: '≥ 01 Registro de Avaliação dos Pés (Exame do Pé Diabético)', val: Math.round(base * 0.7) }
+            { num: 1, label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 1.8) },
+            { num: 2, label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 1.7) },
+            { num: 3, label: '≥ 02 Visitas Domiciliares de ACS com intervalo ≥ 30 dias', val: Math.round(base * 1.5) },
+            { num: 4, label: '≥ 01 Registro de Solicitação/Avaliação de Hemoglobina Glicada (HbA1c)', val: Math.round(base * 1.2) },
+            { num: 5, label: '≥ 01 Registro de Avaliação dos Pés (Exame do Pé Diabético)', val: Math.round(base * 0.7) }
           ],
           mulher: [
-            { label: 'Exame Citopatológico do Colo do Útero (Mulheres 25 a 64 anos)', val: Math.round(base * 2.9) },
-            { label: 'Vacinação contra HPV em Crianças/Adolescentes (9 a 14 anos)', val: Math.round(base * 1.9) },
-            { label: 'Atendimentos Clínicos sobre Saúde Sexual e Reprodutiva', val: Math.round(base * 2.2) },
-            { label: 'Solicitação e Avaliação de Mamografia de Rastreamento (50 a 69 anos)', val: Math.round(base * 1.3) }
+            { num: 1, label: 'Exame Citopatológico do Colo do Útero (Mulheres 25 a 64 anos)', val: Math.round(base * 2.9) },
+            { num: 2, label: 'Vacinação contra HPV em Crianças/Adolescentes (9 a 14 anos)', val: Math.round(base * 1.9) },
+            { num: 3, label: 'Atendimentos Clínicos sobre Saúde Sexual e Reprodutiva', val: Math.round(base * 2.2) },
+            { num: 4, label: 'Solicitação e Avaliação de Mamografia de Rastreamento (50 a 69 anos)', val: Math.round(base * 1.3) }
           ],
           idoso: [
-            { label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) nos últimos 12 meses', val: Math.round(base * 2.6) },
-            { label: '≥ 01 Registro Simultâneo de Peso e Altura nos últimos 12 meses', val: Math.round(base * 2.3) },
-            { label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 2.4) },
-            { label: 'Vacinação contra Influenza registrada na RNDS', val: Math.round(base * 2.0) },
-            { label: 'Avaliação Multidimensional da Pessoa Idosa (IVCF) realizada', val: Math.round(base * 1.1) }
+            { num: 1, label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) nos últimos 12 meses', val: Math.round(base * 2.6) },
+            { num: 2, label: '≥ 01 Registro Simultâneo de Peso e Altura nos últimos 12 meses', val: Math.round(base * 2.3) },
+            { num: 3, label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 2.4) },
+            { num: 4, label: 'Vacinação contra Influenza registrada na RNDS', val: Math.round(base * 2.0) },
+            { num: 5, label: 'Avaliação Multidimensional da Pessoa Idosa (IVCF) realizada', val: Math.round(base * 1.1) }
           ],
           bucal_emulti: [
-            { label: 'Procedimentos Odontológicos Preventivos na APS (eSB)', val: Math.round(base * 3.1) },
-            { label: '1ª Consulta Odontológica Programática Realizada (eSB)', val: Math.round(base * 2.0) },
-            { label: 'Ações de Escovação Dental Supervisionada (eSB)', val: Math.round(base * 1.8) },
-            { label: 'Tratamentos Odontológicos Concluídos (eSB)', val: Math.round(base * 1.3) },
-            { label: 'Ações Interprofissionais Compartilhadas Realizadas (eMulti)', val: Math.round(base * 0.9) }
+            { num: 1, label: 'Procedimentos Odontológicos Preventivos na APS (eSB)', val: Math.round(base * 3.1) },
+            { num: 2, label: '1ª Consulta Odontológica Programática Realizada (eSB)', val: Math.round(base * 2.0) },
+            { num: 3, label: 'Ações de Escovação Dental Supervisionada (eSB)', val: Math.round(base * 1.8) },
+            { num: 4, label: 'Tratamentos Odontológicos Concluídos (eSB)', val: Math.round(base * 1.3) },
+            { num: 5, label: 'Ações Interprofissionais Compartilhadas Realizadas (eMulti)', val: Math.round(base * 0.9) }
           ]
         };
         return mapas[eixoKey] || [];
@@ -1413,9 +1415,7 @@
       document.getElementById('drawer-ind-desc').textContent = metaEixo.desc;
 
       const rankedByAxis = [...activeTeams].sort((a, b) => b.scoresPorEixo[eixoKey] - a.scoresPorEixo[eixoKey]);
-      // Média de Pontuação do Eixo das 25 eSF (No Mais Acesso = 36,32)
       const mediaMunicipalPontuacao = rankedByAxis.reduce((acc, t) => acc + t.scoresPorEixo[eixoKey], 0) / rankedByAxis.length;
-      // Média da Proporção Demanda Programada vs Espontânea das 25 eSF (= 25,52%)
       const mediaPropProgMunicipal = activeTeams.reduce((acc, t) => acc + t.propProg, 0) / activeTeams.length;
 
       let targetEntity = null;
@@ -1424,6 +1424,7 @@
       if (eqSel === 'MUNICIPIO') {
         const sumProg = activeTeams.reduce((a, t) => a + t.prog, 0);
         const sumEsp = activeTeams.reduce((a, t) => a + t.esp, 0);
+        const sumGestantes = activeTeams.reduce((a, t) => a + (t.totalGestantes || 0), 0);
         const sumPraticas = LABELS_GESTANTES_11.map((_, idx) => activeTeams.reduce((a, t) => a + t.praticasGest[idx], 0));
         targetEntity = {
           id: 'MUNICIPIO',
@@ -1431,6 +1432,7 @@
           prog: sumProg,
           esp: sumEsp,
           totalAtend: sumProg + sumEsp,
+          totalGestantes: sumGestantes,
           propProg: Number(mediaPropProgMunicipal.toFixed(2)),
           scoreAtual: Number(mediaMunicipalPontuacao.toFixed(2)),
           praticasGest: sumPraticas
@@ -1464,20 +1466,24 @@
       document.getElementById('aps-kpi1-footer-left').textContent = `Média Planaltina: ${fmtNum(mediaMunicipalPontuacao, 2)}`;
 
       // =====================================================================
-      // CARD 2: INDICADOR SECUNDÁRIO (DEMANDA PROG VS ESP / PUERPÉRIO)
+      // CARD 2: TESTAGEM SÍFILIS/HIV (GESTAÇÃO) OU DEMANDA PROG VS ESP
       // =====================================================================
       const kpi2IconWrap = document.getElementById('aps-kpi2-icon-wrap');
       const kpi2FooterRight = document.getElementById('aps-kpi2-footer-right');
 
       if (eixoKey === 'gestacao') {
-        const consPuerp = targetEntity.praticasGest[7];
-        const visPuerp = targetEntity.praticasGest[2];
-        document.getElementById('aps-kpi2-title').textContent = 'Cuidado no Puerpério (Foco Crítico)';
-        document.getElementById('aps-kpi2-value').textContent = `${fmtNum(consPuerp, 0)} / ${fmtNum(visPuerp, 0)}`;
-        document.getElementById('aps-kpi2-sub').textContent = 'Cons. / Vis. ACS';
-        document.getElementById('aps-kpi2-footer-left').textContent = `${fmtNum(consPuerp, 0)} Consultas • ${fmtNum(visPuerp, 0)} Visitas ACS pós-parto`;
-        kpi2IconWrap.innerHTML = `<i data-lucide="baby" class="w-4 h-4"></i>`;
-        kpi2FooterRight.textContent = 'Pós-parto';
+        const totalGest = targetEntity.totalGestantes || 1;
+        const teste1Tri = targetEntity.praticasGest[10]; // 1º Trimestre
+        const teste3Tri = targetEntity.praticasGest[9];  // 3º Trimestre
+        const perc1Tri = (teste1Tri / totalGest) * 100;
+        const perc3Tri = (teste3Tri / totalGest) * 100;
+
+        document.getElementById('aps-kpi2-title').textContent = 'Testes Sífilis e HIV (1º / 3º Trim.)';
+        document.getElementById('aps-kpi2-value').textContent = `${fmtNum(teste1Tri, 0)} / ${fmtNum(teste3Tri, 0)}`;
+        document.getElementById('aps-kpi2-sub').textContent = '1º Tri / 3º Tri';
+        document.getElementById('aps-kpi2-footer-left').textContent = `1º Tri: ${fmtNum(perc1Tri, 1)}% • 3º Tri: ${fmtNum(perc3Tri, 1)}%`;
+        kpi2IconWrap.innerHTML = `<i data-lucide="flask-conical" class="w-4 h-4"></i>`;
+        kpi2FooterRight.textContent = `${fmtNum(perc1Tri, 0)}% / ${fmtNum(perc3Tri, 0)}% do total`;
       } else {
         const propProg = ((targetEntity.prog / (targetEntity.prog + targetEntity.esp)) * 100);
         document.getElementById('aps-kpi2-title').textContent = 'Demanda Programada vs. Espontânea';
@@ -1489,7 +1495,7 @@
       }
 
       // =====================================================================
-      // CARD 3 & CARD 4: COMPORTAMENTO ESPECÍFICO PARA MAIS ACESSO VS DEMAIS EIXOS
+      // CARD 3 & CARD 4: MAIS ACESSO VS GESTAÇÃO VS DEMAIS EIXOS
       // =====================================================================
       const kpi3IconWrap = document.getElementById('aps-kpi3-icon-wrap');
       const kpi3Badge = document.getElementById('aps-kpi3-badge');
@@ -1500,17 +1506,14 @@
       const kpi4Footer = document.getElementById('aps-kpi4-footer');
 
       if (eixoKey === 'mais_acesso') {
-        // Card 3: Soma de Demanda Programada + Espontânea (Volume Total de Atendimentos)
         document.getElementById('aps-kpi3-title').textContent = 'Volume Total de Atendimentos';
         document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalAtend, 0);
         kpi3Badge.textContent = 'Prog. + Espontânea';
         kpi3IconWrap.innerHTML = `<i data-lucide="layers" class="w-4 h-4"></i>`;
         document.getElementById('aps-kpi3-footer').textContent = `${fmtNum(targetEntity.prog, 0)} Programados + ${fmtNum(targetEntity.esp, 0)} Espontâneos`;
 
-        // Card 4: Cálculo de Proporção Ótima do Indicador Mais Acesso
-        // Piso da Faixa Ótima (Pontuação >= 70) equivale a 41,18% de Demanda Programada (prog/esp >= 0.70) e faixa ideal até 50%
         const propAtual = (targetEntity.prog / targetEntity.totalAtend) * 100;
-        const pisoOtimoProp = (70 / 170) * 100; // 41.176%
+        const pisoOtimoProp = (70 / 170) * 100;
 
         if (targetEntity.scoreAtual >= 70) {
           const superavitPP = propAtual - pisoOtimoProp;
@@ -1539,9 +1542,36 @@
           kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
           kpi4Footer.textContent = `Faltam ${fmtNum(faltaPP, 2)} p.p. (+${fmtNum(atendNecessarios, 0)} atend. prog.) p/ Faixa Ótima (41,2%)`;
         }
+      } else if (eixoKey === 'gestacao') {
+        const bestP = sortedPractices[0];
+        const worstP = sortedPractices[sortedPractices.length - 1];
+        const totalGest = targetEntity.totalGestantes || 1;
+        const percBest = (bestP.val / totalGest) * 100;
+        const percWorst = (worstP.val / totalGest) * 100;
+
+        // Card 3: Total de Gestantes na Unidade + Maior Conformidade no rodapé
+        document.getElementById('aps-kpi3-title').textContent = 'Total de Gestantes na Unidade';
+        document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalGestantes, 0);
+        kpi3Badge.textContent = 'Gestantes Ativas';
+        kpi3IconWrap.innerHTML = `<i data-lucide="users" class="w-4 h-4"></i>`;
+        document.getElementById('aps-kpi3-footer').textContent = `Maior alcance: #${bestP.num} ${bestP.label} (${fmtNum(percBest, 1)}%)`;
+
+        // Card 4: Gargalo + % das Gestantes no cantinho direito + Nº do Indicador
+        document.getElementById('aps-kpi4-title').textContent = 'Alerta de Captação / Gargalo';
+        kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
+        kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
+        kpi4IconWrap.innerHTML = `<i data-lucide="alert-octagon" class="w-4 h-4"></i>`;
+        kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
+        kpi4Value.textContent = fmtNum(worstP.val, 0);
+        kpi4Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
+        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% das gestantes • Ind. #${worstP.num}`;
+        kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
+        kpi4Footer.textContent = `#${worstP.num} — ${worstP.label}`;
       } else {
         const bestP = sortedPractices[0];
         const worstP = sortedPractices[sortedPractices.length - 1];
+        const baseRef = bestP.val || 1;
+        const percWorst = (worstP.val / baseRef) * 100;
 
         document.getElementById('aps-kpi3-title').textContent = 'Maior Conformidade (Ponto Forte)';
         document.getElementById('aps-kpi3-value').textContent = fmtNum(bestP.val, 0);
@@ -1555,10 +1585,10 @@
         kpi4IconWrap.innerHTML = `<i data-lucide="alert-octagon" class="w-4 h-4"></i>`;
         kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
         kpi4Value.textContent = fmtNum(worstP.val, 0);
-        kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
-        kpi4Badge.textContent = 'Ação Imediata';
+        kpi4Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
+        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% da base • Ind. #${worstP.num}`;
         kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
-        kpi4Footer.textContent = worstP.label;
+        kpi4Footer.textContent = `#${worstP.num} — ${worstP.label}`;
       }
 
       lucide.createIcons();
@@ -1630,11 +1660,40 @@
         }
       });
 
+      // Plugin para desenhar os números em cima das barras verticais do Mini Ranking
+      const verticalBarValueLabelsPlugin = {
+        id: 'verticalBarValueLabels',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.font = '600 9.5px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+
+          const meta = chart.getDatasetMeta(0);
+          meta.data.forEach((bar, index) => {
+            const rawVal = chart.data.datasets[0].data[index];
+            if (rawVal === null || rawVal === undefined) return;
+            const isSel = rankedTeams[index]?.id === selectedId;
+            ctx.fillStyle = isSel ? '#0284c7' : (isDark ? '#cbd5e1' : '#475569');
+            const formatted = Number(rawVal).toLocaleString('pt-BR', {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1
+            });
+            ctx.fillText(formatted, bar.x, bar.y - 4);
+          });
+          ctx.restore();
+        }
+      };
+
       const ctxRight = document.getElementById('chartApsMiniRanking').getContext('2d');
       if (chartApsMiniRankingInstance) chartApsMiniRankingInstance.destroy();
 
+      const maxRightVal = Math.max(...rankedTeams.map(t => t.scoresPorEixo[eixoKey]), 1);
+
       chartApsMiniRankingInstance = new Chart(ctxRight, {
         type: 'bar',
+        plugins: [verticalBarValueLabelsPlugin],
         data: {
           labels: rankedTeams.map(t => t.id),
           datasets: [{
@@ -1647,10 +1706,13 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: { top: 20 }
+          },
           plugins: { legend: { display: false } },
           scales: {
             x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 }, maxRotation: 60, minRotation: 60 } },
-            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }
+            y: { beginAtZero: true, suggestedMax: Math.ceil(maxRightVal * 1.15), grid: { color: gridColor }, ticks: { color: textColor } }
           }
         }
       });
@@ -1663,12 +1725,14 @@
 
       const thPerc = document.getElementById('aps-diag-th-perc');
       if (thPerc) {
-        thPerc.textContent = eixoKey === 'mais_acesso' ? '% sobre Total de Atendimentos' : '% sobre 1ª Consulta / Base';
+        thPerc.textContent = eixoKey === 'mais_acesso'
+          ? '% sobre Total de Atendimentos'
+          : (eixoKey === 'gestacao' ? '% sobre Total de Gestantes' : '% sobre 1ª Consulta / Base');
       }
 
       const refBase = eixoKey === 'mais_acesso'
         ? (targetEntity.totalAtend || 1)
-        : (sortedPractices[0]?.val || 1);
+        : (eixoKey === 'gestacao' ? (targetEntity.totalGestantes || 1) : (sortedPractices[0]?.val || 1));
 
       sortedPractices.forEach((p, idx) => {
         const percRel = (p.val / refBase) * 100;
@@ -1694,10 +1758,12 @@
           }
         }
 
+        const numDisplay = p.num ? String(p.num).padStart(2, '0') : String(idx + 1).padStart(2, '0');
+
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors';
         tr.innerHTML = `
-          <td class="py-2.5 px-4 font-mono text-slate-400">${String(idx + 1).padStart(2, '0')}</td>
+          <td class="py-2.5 px-4 font-mono text-slate-400">#${numDisplay}</td>
           <td class="py-2.5 px-4 font-medium text-slate-800 dark:text-slate-200">${p.label}</td>
           <td class="py-2.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">${fmtNum(p.val, 0)}</td>
           <td class="py-2.5 px-4 text-right tabular-nums text-slate-500">${fmtNum(percRel, 2)}%</td>
