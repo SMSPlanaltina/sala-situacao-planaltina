@@ -1162,14 +1162,14 @@
       mais_acesso: {
         titulo: '1. Mais Acesso à Atenção Primária à Saúde (APS)',
         fonte: 'SISAB / e-SUS APS (Portaria GM/MS Nº 3.493/2024)',
-        par: 'Ótimo ≥ 70 pts (≥ 41,2% a 50% Prog.) | Bom 50–69,9 | Suficiente 30–49,9 | Regular < 30',
+        par: 'Ótimo > 50% a 70% | Bom > 30% a 50% | Suficiente > 10% a 30% | Regular ≤ 10% ou > 70%',
         formula: 'Pontuação oficial do componente Mais Acesso e proporção entre Demanda Programada (cuidado continuado) e Demanda Espontânea (acolhimento/agudos).',
         desc: 'Mede a pontuação do indicador Mais Acesso, o volume total mensal de atendimentos da unidade e o equilíbrio da agenda entre cuidado programado e demanda espontânea.'
       },
       gestacao: {
         titulo: '2. Cuidado na Gestação e Puerpério',
         fonte: 'SISAB / e-SUS APS (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)',
-        par: 'Ótimo ≥ 70 | Bom 50–69,9 | Suficiente 30–49,9 | Regular < 30',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
         formula: 'Soma ponderada das 11 boas práticas do pré-natal e puerpério (1ª consulta oportuna, ≥7 consultas, PA, peso/altura, vacina dTpa, saúde bucal, exames sífilis/HIV/hepatites e visitas/consulta de puerpério).',
         desc: 'Avalia a integralidade da linha de cuidado materno-infantil por Equipe (INE), com foco na captação precoce, testagem rápida e assistência pós-parto (puerpério).'
       },
@@ -1246,15 +1246,31 @@
       });
     }
 
-    function classifyPortaria3493(score) {
-      if (score >= 70) {
-        return { label: 'Ótimo', valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
-      } else if (score >= 50) {
-        return { label: 'Bom', valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
-      } else if (score >= 30) {
-        return { label: 'Suficiente', valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+    function classifyPortaria3493(score, eixoKey = 'gestacao') {
+      if (eixoKey === 'mais_acesso') {
+        // C1: Métrica de Equilíbrio (>50 e <=70 Ótimo | >30 e <=50 Bom | >10 e <=30 Suficiente | <=10 ou >70 Regular)
+        if (score > 50 && score <= 70) {
+          return { label: 'Ótimo', valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
+        } else if (score > 30 && score <= 50) {
+          return { label: 'Bom', valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
+        } else if (score > 10 && score <= 30) {
+          return { label: 'Suficiente', valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+        } else if (score > 70) {
+          return { label: 'Regular (>70%)', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+        } else {
+          return { label: 'Regular (≤10%)', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+        }
       } else {
-        return { label: 'Regular', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+        // C3 e demais: Métrica Linear (>75 e <=100 Ótimo | >50 e <=75 Bom | >25 e <=50 Suficiente | <=25 Regular)
+        if (score > 75) {
+          return { label: 'Ótimo', valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
+        } else if (score > 50 && score <= 75) {
+          return { label: 'Bom', valor: 6000, badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', barColor: '#0284c7' };
+        } else if (score > 25 && score <= 50) {
+          return { label: 'Suficiente', valor: 4000, badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', barColor: '#f59e0b' };
+        } else {
+          return { label: 'Regular', valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
+        }
       }
     }
 
@@ -1445,16 +1461,16 @@
           ...found,
           scoreAtual: found.scoresPorEixo[eixoKey]
         };
-        rankPosText = `#${pos} de 25 eSF`;
+        rankPosText = `${pos}º de 25 eSF`;
       }
 
       const practices = getPracticesForAxis(eixoKey, targetEntity);
       const sortedPractices = [...practices].sort((a, b) => b.val - a.val);
 
       // =====================================================================
-      // CARD 1: PONTUAÇÃO DE FATO + MÉDIA DE PONTUAÇÃO DE PLANALTINA
+      // CARD 1: PONTUAÇÃO DE FATO + CLASSIFICAÇÃO POR EIXO
       // =====================================================================
-      const faixa = classifyPortaria3493(targetEntity.scoreAtual);
+      const faixa = classifyPortaria3493(targetEntity.scoreAtual, eixoKey);
       document.getElementById('aps-kpi1-title').textContent = eixoKey === 'mais_acesso'
         ? 'Pontuação do Eixo (Mais Acesso)'
         : 'Pontuação / Escore do Eixo';
@@ -1473,8 +1489,8 @@
 
       if (eixoKey === 'gestacao') {
         const totalGest = targetEntity.totalGestantes || 1;
-        const teste1Tri = targetEntity.praticasGest[10]; // 1º Trimestre
-        const teste3Tri = targetEntity.praticasGest[9];  // 3º Trimestre
+        const teste1Tri = targetEntity.praticasGest[10];
+        const teste3Tri = targetEntity.praticasGest[9];
         const perc1Tri = (teste1Tri / totalGest) * 100;
         const perc3Tri = (teste3Tri / totalGest) * 100;
 
@@ -1512,35 +1528,50 @@
         kpi3IconWrap.innerHTML = `<i data-lucide="layers" class="w-4 h-4"></i>`;
         document.getElementById('aps-kpi3-footer').textContent = `${fmtNum(targetEntity.prog, 0)} Programados + ${fmtNum(targetEntity.esp, 0)} Espontâneos`;
 
-        const propAtual = (targetEntity.prog / targetEntity.totalAtend) * 100;
-        const pisoOtimoProp = (70 / 170) * 100;
+        const scoreMA = targetEntity.scoreAtual;
 
-        if (targetEntity.scoreAtual >= 70) {
-          const superavitPP = propAtual - pisoOtimoProp;
-          const faltaPara50 = Math.max(0, 50 - propAtual);
-          document.getElementById('aps-kpi4-title').textContent = 'Status da Proporção Ótima';
+        if (scoreMA > 50 && scoreMA <= 70) {
+          // Dentro da Faixa Ótima (> 50% e <= 70%)
+          const margemAcimaPiso = scoreMA - 50;
+          const margemAteTeto = 70 - scoreMA;
+          document.getElementById('aps-kpi4-title').textContent = 'Status da Faixa de Equilíbrio';
           kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-emerald-200/90 dark:border-emerald-900/60 shadow-sm flex flex-col justify-between';
           kpi4IconWrap.className = 'p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400';
           kpi4IconWrap.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i>`;
           kpi4Value.className = 'text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums';
-          kpi4Value.textContent = `+${fmtNum(superavitPP, 2)} p.p.`;
+          kpi4Value.textContent = `+${fmtNum(margemAcimaPiso, 2)} p.p.`;
           kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300';
-          kpi4Badge.textContent = 'Dentro da Faixa Ótima';
+          kpi4Badge.textContent = 'Faixa Ótima (>50% a 70%)';
           kpi4Footer.className = 'truncate font-medium text-emerald-700 dark:text-emerald-400';
-          kpi4Footer.textContent = `Ótimo atingido (≥ 41,2% / 70 pts) • Para 50%: faltam ${fmtNum(faltaPara50, 2)} p.p.`;
+          kpi4Footer.textContent = `Equilíbrio ideal atingido • Margem até teto (70%): ${fmtNum(margemAteTeto, 2)} p.p.`;
+        } else if (scoreMA > 70) {
+          // Passou de 70%: Caiu para Regular (Agenda Engessada)
+          const excessoPP = scoreMA - 70;
+          const excessoProg = Math.max(1, targetEntity.prog - Math.floor(0.70 * targetEntity.esp));
+          document.getElementById('aps-kpi4-title').textContent = 'Alerta: Agenda Engessada (> 70%)';
+          kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
+          kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
+          kpi4IconWrap.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i>`;
+          kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
+          kpi4Value.textContent = `+${fmtNum(excessoPP, 2)} p.p.`;
+          kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
+          kpi4Badge.textContent = 'Caiu p/ Regular (>70%)';
+          kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
+          kpi4Footer.textContent = `Ultrapassou teto de 70% (+${fmtNum(excessoProg, 0)} prog. acima do limite de equilíbrio)`;
         } else {
-          const faltaPP = pisoOtimoProp - propAtual;
-          const atendNecessarios = Math.max(1, Math.ceil((pisoOtimoProp / 100) * targetEntity.totalAtend - targetEntity.prog));
-          document.getElementById('aps-kpi4-title').textContent = 'Distância p/ Proporção Ótima';
+          // Abaixo ou igual a 50%: Precisa subir para > 50% para atingir Ótimo
+          const faltaPP = 50 - scoreMA;
+          const atendNecessarios = Math.max(1, (Math.floor(0.50 * targetEntity.esp) + 1) - targetEntity.prog);
+          document.getElementById('aps-kpi4-title').textContent = 'Distância p/ Faixa Ótima (> 50%)';
           kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
           kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
           kpi4IconWrap.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4"></i>`;
           kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
           kpi4Value.textContent = `-${fmtNum(faltaPP, 2)} p.p.`;
           kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
-          kpi4Badge.textContent = `Converter +${fmtNum(atendNecessarios, 0)} prog.`;
+          kpi4Badge.textContent = `Agendar +${fmtNum(atendNecessarios, 0)} prog.`;
           kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
-          kpi4Footer.textContent = `Faltam ${fmtNum(faltaPP, 2)} p.p. (+${fmtNum(atendNecessarios, 0)} atend. prog.) p/ Faixa Ótima (41,2%)`;
+          kpi4Footer.textContent = `Faltam ${fmtNum(faltaPP, 2)} p.p. (+${fmtNum(atendNecessarios, 0)} atend. prog.) p/ Faixa Ótima (> 50%)`;
         }
       } else if (eixoKey === 'gestacao') {
         const bestP = sortedPractices[0];
@@ -1549,14 +1580,12 @@
         const percBest = (bestP.val / totalGest) * 100;
         const percWorst = (worstP.val / totalGest) * 100;
 
-        // Card 3: Total de Gestantes na Unidade + Maior Conformidade no rodapé
         document.getElementById('aps-kpi3-title').textContent = 'Total de Gestantes na Unidade';
         document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalGestantes, 0);
         kpi3Badge.textContent = 'Gestantes Ativas';
         kpi3IconWrap.innerHTML = `<i data-lucide="users" class="w-4 h-4"></i>`;
         document.getElementById('aps-kpi3-footer').textContent = `Maior alcance: #${bestP.num} ${bestP.label} (${fmtNum(percBest, 1)}%)`;
 
-        // Card 4: Gargalo + % das Gestantes no cantinho direito + Nº do Indicador
         document.getElementById('aps-kpi4-title').textContent = 'Alerta de Captação / Gargalo';
         kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
         kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
@@ -1740,9 +1769,13 @@
 
         if (eixoKey === 'mais_acesso') {
           if (p.label.includes('Programada')) {
-            badge = targetEntity.scoreAtual >= 70
-              ? '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Proporção Ótima Atingida</span>'
-              : '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Ampliar Agenda Programada</span>';
+            if (targetEntity.scoreAtual > 50 && targetEntity.scoreAtual <= 70) {
+              badge = '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Equilíbrio Ótimo (>50% a 70%)</span>';
+            } else if (targetEntity.scoreAtual > 70) {
+              badge = '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">Alerta: Agenda Engessada (>70% • Regular)</span>';
+            } else {
+              badge = '<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Ampliar Agenda Programada (Meta >50%)</span>';
+            }
           } else {
             badge = '<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300">Acolhimento / Demanda Aguda</span>';
           }
@@ -2257,10 +2290,54 @@
         }
       });
 
+      // Plugin para exibir o valor exato em cima de cada barra no gráfico mensal PQA-VS
+      const pqavsVerticalBarLabelsPlugin = {
+        id: 'pqavsVerticalBarLabels',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.font = '600 9.5px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+
+          chart.data.datasets.forEach((dataset, datasetIndex) => {
+            const meta = chart.getDatasetMeta(datasetIndex);
+            if (meta.hidden) return;
+            meta.data.forEach((bar, index) => {
+              const rawVal = dataset.data[index];
+              if (rawVal === null || rawVal === undefined) return;
+
+              const decimals = isCumulative
+                ? (datasetIndex === 0 ? 0 : (Number.isInteger(rawVal) ? 0 : 2))
+                : 1;
+
+              const formatted = Number(rawVal).toLocaleString('pt-BR', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+              });
+
+              ctx.fillStyle = datasetIndex === 0
+                ? (isDark ? '#38bdf8' : '#0284c7')
+                : (isDark ? '#a5b4fc' : '#1e3a8a');
+
+              ctx.fillText(formatted, bar.x, bar.y - 4);
+            });
+          });
+          ctx.restore();
+        }
+      };
+
+      const maxMensalVal = Math.max(
+        ...serieMensalReal.filter(v => v !== null && v !== undefined),
+        ...serieMetaMensal.filter(v => v !== null && v !== undefined),
+        1
+      );
+
       const ctx2 = document.getElementById('chartMensal').getContext('2d');
       if (chartMensalInstance) chartMensalInstance.destroy();
       chartMensalInstance = new Chart(ctx2, {
         type: 'bar',
+        plugins: [pqavsVerticalBarLabelsPlugin],
         data: {
           labels: labelsRecortados,
           datasets: [
@@ -2283,13 +2360,16 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: { top: 18 }
+          },
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { labels: { color: textColor, usePointStyle: true, boxWidth: 8 } }
           },
           scales: {
             x: { grid: { display: false }, ticks: { color: textColor } },
-            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }
+            y: { beginAtZero: true, suggestedMax: Math.ceil(maxMensalVal * 1.16), grid: { color: gridColor }, ticks: { color: textColor } }
           }
         }
       });
