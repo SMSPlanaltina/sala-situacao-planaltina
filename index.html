@@ -441,21 +441,21 @@
 
             <!-- BARRA DE COMANDO DUPLA (2 SELETORES SUSPENSOS INTELIGENTES) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1 items-end">
-              <!-- Seletor Suspenso 1: Eixo Temático em Ordem Estrita 1 a 8 -->
+              <!-- Seletor Suspenso 1: Eixo Temático em Ordem Estrita C1 a C7 -->
               <div class="min-w-0">
                 <label for="aps-select-eixo" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 truncate">
                   1. Eixo Temático — Componente de Qualidade (Portaria Nº 3.493/24)
                 </label>
                 <div class="relative">
                   <select id="aps-select-eixo" onchange="handleApsSelectionChange()" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
-                    <option value="mais_acesso" selected>1. Mais Acesso à APS (Demanda Programada vs. Espontânea)</option>
-                    <option value="gestacao">2. Cuidado na Gestação e Puerpério (11 Ações / Boas Práticas)</option>
-                    <option value="infantil">3. Cuidado no Desenvolvimento Infantil (Puericultura / Vacinas)</option>
-                    <option value="hipertensao">4. Cuidado da Pessoa com Hipertensão Arterial (Consulta + PA + Antropometria)</option>
-                    <option value="diabetes">5. Cuidado da Pessoa com Diabetes Mellitus (Consulta + PA + HbA1c + Exame dos Pés)</option>
-                    <option value="mulher">6. Cuidado da Mulher na Prevenção do Câncer (Citopatológico / Rastreamento)</option>
-                    <option value="idoso">7. Cuidado da Pessoa Idosa (Avaliação Multidimensional / Visitas ACS)</option>
-                    <option value="bucal_emulti">8. Saúde Bucal (eSB) e Equipes Multiprofissionais (eMulti)</option>
+                    <option value="mais_acesso" selected>C1 — Mais Acesso à Atenção Primária</option>
+                    <option value="infantil">C2 — Cuidado no Desenvolvimento Infantil</option>
+                    <option value="gestacao">C3 — Cuidado na Gestação e Puerpério</option>
+                    <option value="diabetes">C4 — Cuidado da Pessoa com Diabetes</option>
+                    <option value="hipertensao">C5 — Cuidado da Pessoa com Hipertensão</option>
+                    <option value="idoso">C6 — Cuidado da Pessoa Idosa</option>
+                    <option value="mulher">C7 — Cuidado da Mulher na Prevenção do Câncer</option>
+                    <option value="bucal_emulti">Anexo V — Saúde Bucal (eSB) e Equipes eMulti</option>
                   </select>
                 </div>
               </div>
@@ -479,62 +479,62 @@
                ========================================== -->
           <div id="aps-subview-diagnostico" class="space-y-6">
 
-            <!-- BLOCO 1: OS 4 CARTÕES DE DIAGNÓSTICO RÁPIDO (BENTO GRID) -->
+            <!-- BLOCO 1: OS 4 CARTÕES DE DIAGNÓSTICO RÁPIDO (BENTO GRID ALINHADO) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <!-- Card APS 1: Pontuação / Volume do Eixo -->
               <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                  <span id="aps-kpi1-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Pontuação do Eixo (Mais Acesso)</span>
+                <div class="flex items-center justify-between h-7">
+                  <span id="aps-kpi1-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Pontuação / % Demanda Programada</span>
                   <span id="aps-kpi1-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Ótimo</span>
                 </div>
                 <div class="my-3 flex items-baseline gap-2">
-                  <div id="aps-kpi1-value" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">77,01</div>
-                  <span id="aps-kpi1-rank" class="text-xs font-mono font-semibold text-sky-600 dark:text-sky-400">#1 de 25 eSF</span>
+                  <div id="aps-kpi1-value" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">77,01%</div>
+                  <span id="aps-kpi1-rank" class="text-xs font-mono font-semibold text-sky-600 dark:text-sky-400">1º de 25 eSF</span>
                 </div>
-                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                  <span id="aps-kpi1-footer-left">Média Planaltina: 36,32</span>
-                  <span id="aps-kpi1-footer-right" class="font-mono font-semibold text-slate-700 dark:text-slate-300">Portaria 3.493</span>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 h-4">
+                  <span id="aps-kpi1-footer-left"></span>
+                  <span id="aps-kpi1-footer-right" class="font-semibold text-sky-600 dark:text-sky-400">Média Planaltina: 36,32%</span>
                 </div>
               </div>
 
               <!-- Card APS 2: Destaque Crítico / Proporção do Indicador -->
               <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                  <span id="aps-kpi2-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Demanda Programada vs. Espontânea</span>
+                <div class="flex items-center justify-between h-7">
+                  <span id="aps-kpi2-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Demanda Espontânea (Livre Demanda)</span>
                   <span id="aps-kpi2-icon-wrap" class="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
-                    <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                    <i data-lucide="door-open" class="w-4 h-4"></i>
                   </span>
                 </div>
                 <div class="my-3 flex items-baseline gap-2">
-                  <div id="aps-kpi2-value" class="text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400 tabular-nums">43,51%</div>
-                  <span id="aps-kpi2-sub" class="text-xs font-mono text-slate-500">(422 / 970)</span>
+                  <div id="aps-kpi2-value" class="text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400 tabular-nums">126</div>
+                  <span id="aps-kpi2-sub" class="text-xs font-mono text-slate-500">(22,99% do total)</span>
                 </div>
-                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 gap-2">
-                  <span id="aps-kpi2-footer-left" class="truncate">Programada: 422 • Espontânea: 548</span>
-                  <span id="aps-kpi2-footer-right" class="text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">Média Planaltina: 25,52%</span>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 gap-2 h-4">
+                  <span id="aps-kpi2-footer-left" class="truncate"></span>
+                  <span id="aps-kpi2-footer-right" class="text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">Média Planaltina: 63,68%</span>
                 </div>
               </div>
 
-              <!-- Card APS 3: Volume Total de Atendimentos (Mais Acesso) / Maior Conformidade (Demais Eixos) -->
+              <!-- Card APS 3: Volume Total / Público Vinculado -->
               <div id="aps-kpi3-card" class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/50 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                  <span id="aps-kpi3-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Volume Total de Atendimentos</span>
+                <div class="flex items-center justify-between h-7">
+                  <span id="aps-kpi3-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Volume Total de Atendimentos (DN)</span>
                   <span id="aps-kpi3-icon-wrap" class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
                     <i data-lucide="layers" class="w-4 h-4"></i>
                   </span>
                 </div>
                 <div class="my-3 flex items-baseline gap-2">
-                  <div id="aps-kpi3-value" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">970</div>
+                  <div id="aps-kpi3-value" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">548</div>
                   <span id="aps-kpi3-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Prog. + Espontânea</span>
                 </div>
-                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                  <span id="aps-kpi3-footer" class="truncate font-medium text-slate-700 dark:text-slate-300">422 Programados + 548 Espontâneos</span>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 h-4">
+                  <span id="aps-kpi3-footer" class="truncate font-medium text-slate-700 dark:text-slate-300">422 Programados + 126 Espontâneos</span>
                 </div>
               </div>
 
-              <!-- Card APS 4: Parâmetro de Proporção Ótima (Mais Acesso) / Gargalo (Demais Eixos) -->
+              <!-- Card APS 4: Parâmetro de Proporção Ótima / Gargalo -->
               <div id="aps-kpi4-card" class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between h-7">
                   <span id="aps-kpi4-title" class="text-xs font-medium text-slate-500 dark:text-slate-400">Parâmetro de Proporção Ótima</span>
                   <span id="aps-kpi4-icon-wrap" class="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400">
                     <i data-lucide="alert-octagon" class="w-4 h-4"></i>
@@ -544,7 +544,7 @@
                   <div id="aps-kpi4-value" class="text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums">-</div>
                   <span id="aps-kpi4-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">Ação Imediata</span>
                 </div>
-                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 h-4">
                   <span id="aps-kpi4-footer" class="truncate font-medium text-rose-600 dark:text-rose-400">-</span>
                 </div>
               </div>
@@ -1115,34 +1115,43 @@
     // (Com Dados Reais de Gestação e Puerpério atualizados)
     // =========================================================================
     const APS_RAW_TEAMS = [
-      { id: 'ESF 01', cnes: '2440253', ubs: 'UNIDADE BASICA DE SAUDE ESF 01 QD 03 S OESTE', bairro: 'Qd 03 Setor Oeste', prog: 83, esp: 574, scoreMaisAcesso: 14.46, scoreGestantes: 35.55, totalGestantes: 55, gestPraticas: [47, 29, 11, 22, 19, 17, 16, 13, 25, 5, 8] },
-      { id: 'ESF 02', cnes: '2438585', ubs: 'UNIDADE BASICA DE SAUDE ESF 02 QD 04 SETOR SUL', bairro: 'Qd 04 Setor Sul', prog: 160, esp: 440, scoreMaisAcesso: 36.36, scoreGestantes: 37.63, totalGestantes: 63, gestPraticas: [49, 38, 4, 26, 25, 26, 21, 11, 17, 8, 33] },
-      { id: 'ESF 03', cnes: '2438666', ubs: 'UNIDADE BASICA DE SAUDE ESF 03 QD 04 LESTE', bairro: 'Qd 04 Leste', prog: 314, esp: 419, scoreMaisAcesso: 74.94, scoreGestantes: 50.64, totalGestantes: 36, gestPraticas: [32, 22, 6, 30, 16, 17, 15, 13, 9, 14, 25] },
-      { id: 'ESF 04', cnes: '2438631', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 333, esp: 573, scoreMaisAcesso: 58.12, scoreGestantes: 44.15, totalGestantes: 20, gestPraticas: [19, 13, 2, 9, 10, 10, 6, 2, 9, 8, 8] },
-      { id: 'ESF 05', cnes: '2438615', ubs: 'UNIDADE BASICA DE SAUDE ESF 05 QD 13 NORTE', bairro: 'Qd 13 Norte', prog: 81, esp: 457, scoreMaisAcesso: 17.72, scoreGestantes: 37.61, totalGestantes: 31, gestPraticas: [23, 16, 5, 16, 11, 11, 8, 7, 7, 6, 17] },
-      { id: 'ESF 07', cnes: '2438607', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 173, esp: 622, scoreMaisAcesso: 27.81, scoreGestantes: 30.53, totalGestantes: 45, gestPraticas: [33, 14, 3, 18, 16, 16, 13, 6, 12, 1, 17] },
-      { id: 'ESF 08', cnes: '2438682', ubs: 'UNIDADE BASICA DE SAUDE ESF 08 BAIRRO DOS IMIGRANTES', bairro: 'Bairro dos Imigrantes', prog: 168, esp: 455, scoreMaisAcesso: 36.92, scoreGestantes: 48.58, totalGestantes: 36, gestPraticas: [30, 26, 9, 20, 22, 20, 16, 12, 22, 7, 7] },
-      { id: 'ESF 09', cnes: '2437937', ubs: 'UNIDADE BASICA DE SAUDE ESF 09 VILA MUTIRAO', bairro: 'Vila Mutirão', prog: 267, esp: 662, scoreMaisAcesso: 40.33, scoreGestantes: 35.07, totalGestantes: 29, gestPraticas: [18, 18, 4, 7, 14, 14, 11, 6, 11, 2, 6] },
-      { id: 'ESF 10', cnes: '2438593', ubs: 'UNIDADE BASICA DE SAUDE ESF 10 PARQUE ITAPUA I', bairro: 'Parque Itapuã I', prog: 422, esp: 548, scoreMaisAcesso: 77.01, scoreGestantes: 39.03, totalGestantes: 64, gestPraticas: [50, 35, 11, 25, 27, 22, 16, 18, 17, 19, 32] },
-      { id: 'ESF 11', cnes: '2437562', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 92, esp: 242, scoreMaisAcesso: 38.02, scoreGestantes: 29.35, totalGestantes: 37, gestPraticas: [24, 16, 2, 20, 12, 10, 5, 5, 17, 2, 5] },
-      { id: 'ESF 12', cnes: '2438674', ubs: 'UNIDADE BASICA DE SAUDE ESF 12 BRASILINHA 17', bairro: 'Brasilinha Qd 17', prog: 188, esp: 566, scoreMaisAcesso: 33.22, scoreGestantes: 41.56, totalGestantes: 9, gestPraticas: [5, 5, 3, 3, 4, 4, 4, 3, 2, 4, 4] },
-      { id: 'ESF 13', cnes: '2438658', ubs: 'UNIDADE BASICA DE SAUDE ESF 13 QD 08 SETOR LESTE', bairro: 'Qd 08 Setor Leste', prog: 224, esp: 665, scoreMaisAcesso: 33.68, scoreGestantes: 50.49, totalGestantes: 41, gestPraticas: [36, 22, 8, 16, 24, 22, 21, 10, 14, 18, 35] },
-      { id: 'ESF 14', cnes: '2437546', ubs: 'UNIDADE BASICA DE SAUDE ESF 14 SAO GABRIEL', bairro: 'São Gabriel', prog: 114, esp: 628, scoreMaisAcesso: 18.15, scoreGestantes: 40.94, totalGestantes: 16, gestPraticas: [16, 8, 0, 7, 8, 8, 7, 4, 0, 1, 12] },
-      { id: 'ESF 15', cnes: '2361493', ubs: 'UNIDADE BASICA DE SAUDE ESF 15', bairro: 'Setor Central / ESF 15', prog: 118, esp: 291, scoreMaisAcesso: 40.55, scoreGestantes: 26.17, totalGestantes: 18, gestPraticas: [12, 7, 1, 7, 7, 3, 5, 1, 0, 3, 5] },
-      { id: 'ESF 16', cnes: '2438240', ubs: 'UNIDADE BASICA DE SAUDE ESF 16 BARROLANDIA', bairro: 'Barrolândia', prog: 175, esp: 453, scoreMaisAcesso: 38.63, scoreGestantes: 40.86, totalGestantes: 49, gestPraticas: [40, 25, 4, 22, 26, 23, 20, 13, 6, 16, 23] },
-      { id: 'ESF 18', cnes: '2437562', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 161, esp: 383, scoreMaisAcesso: 42.04, scoreGestantes: 37.98, totalGestantes: 51, gestPraticas: [38, 22, 5, 36, 20, 20, 16, 13, 7, 16, 18] },
-      { id: 'ESF 19', cnes: '2438631', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 155, esp: 297, scoreMaisAcesso: 52.19, scoreGestantes: 43.36, totalGestantes: 25, gestPraticas: [22, 14, 3, 13, 10, 10, 10, 4, 12, 4, 16] },
-      { id: 'ESF 20', cnes: '2885808', ubs: 'UNIDADE BASICA DE SAUDE ESF 20', bairro: 'Unidade ESF 20', prog: 51, esp: 635, scoreMaisAcesso: 8.03, scoreGestantes: 39.33, totalGestantes: 36, gestPraticas: [30, 18, 4, 3, 15, 13, 11, 9, 13, 14, 24] },
-      { id: 'ESF 21', cnes: '5065917', ubs: 'UNIDADE BASICA DE SAUDE ESF 21 BAIRRO SAO JOSE', bairro: 'Bairro São José', prog: 270, esp: 552, scoreMaisAcesso: 48.91, scoreGestantes: 39.73, totalGestantes: 67, gestPraticas: [52, 36, 7, 23, 24, 24, 16, 13, 29, 20, 46] },
-      { id: 'ESF 22', cnes: '2438607', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 51, esp: 462, scoreMaisAcesso: 11.04, scoreGestantes: 40.45, totalGestantes: 33, gestPraticas: [30, 10, 3, 22, 13, 14, 14, 8, 14, 0, 17] },
-      { id: 'ESF 23', cnes: '5442397', ubs: 'UNIDADE BASICA DE SAUDE ESF 23 LAGOA FORMOSA', bairro: 'Lagoa Formosa', prog: 168, esp: 531, scoreMaisAcesso: 31.64, scoreGestantes: 36.13, totalGestantes: 24, gestPraticas: [21, 11, 2, 7, 12, 8, 8, 2, 9, 5, 9] },
-      { id: 'ESF 25', cnes: '7116926', ubs: 'UNIDADE BASICA DE SAUDE ESF 25 QD 19 NORTE', bairro: 'Qd 19 Norte', prog: 180, esp: 526, scoreMaisAcesso: 34.22, scoreGestantes: 34.84, totalGestantes: 32, gestPraticas: [26, 16, 2, 21, 11, 9, 10, 5, 8, 9, 4] },
-      { id: 'ESF 26', cnes: '7157355', ubs: 'UNIDADE BASICA DE SAUDE ESF 26 QD 08 SETOR NORTE', bairro: 'Qd 08 Setor Norte', prog: 46, esp: 218, scoreMaisAcesso: 21.10, scoreGestantes: 35.59, totalGestantes: 29, gestPraticas: [24, 12, 3, 18, 13, 12, 9, 3, 9, 0, 9] },
-      { id: 'ESF 27', cnes: '7570104', ubs: 'UNIDADE BASICA DE SAUDE ESF 27 CORREGO RICO', bairro: 'Córrego Rico (Rural)', prog: 41, esp: 168, scoreMaisAcesso: 24.40, scoreGestantes: 51.89, totalGestantes: 9, gestPraticas: [8, 7, 3, 6, 4, 4, 5, 3, 6, 2, 3] },
-      { id: 'ESF 28', cnes: '9019170', ubs: 'UNIDADE BASICA DE SAUDE ESF 28 NORTE', bairro: 'Setor Norte / ESF 28', prog: 225, esp: 465, scoreMaisAcesso: 48.39, scoreGestantes: 37.44, totalGestantes: 16, gestPraticas: [14, 10, 1, 10, 8, 7, 5, 1, 3, 3, 3] }
+      { id: 'ESF 01', cnes: '2440253', ine: '465038', ubs: 'UNIDADE BASICA DE SAUDE ESF 01 QD 03 S OESTE', bairro: 'Qd 03 Setor Oeste', prog: 83, esp: 574, scoreMaisAcesso: 14.46, scoreInfantil: 14.29, totalCriancas: 119, pontosInfantil: 1700, infantilPraticas: [46, 15, 4, 11, 9], scoreGestantes: 35.55, totalGestantes: 55, gestPraticas: [47, 29, 11, 22, 19, 17, 16, 13, 25, 5, 8] },
+      { id: 'ESF 02', cnes: '2438585', ine: '464902', ubs: 'UNIDADE BASICA DE SAUDE ESF 02 QD 04 SETOR SUL', bairro: 'Qd 04 Setor Sul', prog: 160, esp: 440, scoreMaisAcesso: 36.36, scoreInfantil: 21.26, totalCriancas: 127, pontosInfantil: 2700, infantilPraticas: [67, 16, 7, 20, 25], scoreGestantes: 37.63, totalGestantes: 63, gestPraticas: [49, 38, 4, 26, 25, 26, 21, 11, 17, 8, 33] },
+      { id: 'ESF 03', cnes: '2438666', ine: '464996', ubs: 'UNIDADE BASICA DE SAUDE ESF 03 QD 04 LESTE', bairro: 'Qd 04 Leste', prog: 314, esp: 419, scoreMaisAcesso: 74.94, scoreInfantil: 30.17, totalCriancas: 120, pontosInfantil: 3620, infantilPraticas: [80, 27, 34, 12, 28], scoreGestantes: 50.64, totalGestantes: 36, gestPraticas: [32, 22, 6, 30, 16, 17, 15, 13, 9, 14, 25] },
+      { id: 'ESF 04', cnes: '2438631', ine: '464953', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 333, esp: 573, scoreMaisAcesso: 58.12, scoreInfantil: 28.24, totalCriancas: 51, pontosInfantil: 1440, infantilPraticas: [26, 10, 15, 11, 10], scoreGestantes: 44.15, totalGestantes: 20, gestPraticas: [19, 13, 2, 9, 10, 10, 6, 2, 9, 8, 8] },
+      { id: 'ESF 05', cnes: '2438615', ine: '464937', ubs: 'UNIDADE BASICA DE SAUDE ESF 05 QD 13 NORTE', bairro: 'Qd 13 Norte', prog: 81, esp: 457, scoreMaisAcesso: 17.72, scoreInfantil: 16.39, totalCriancas: 72, pontosInfantil: 1180, infantilPraticas: [32, 10, 7, 4, 6], scoreGestantes: 37.61, totalGestantes: 31, gestPraticas: [23, 16, 5, 16, 11, 11, 8, 7, 7, 6, 17] },
+      { id: 'ESF 07', cnes: '2438607', ine: '464929', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 173, esp: 622, scoreMaisAcesso: 27.81, scoreInfantil: 18.99, totalCriancas: 79, pontosInfantil: 1500, infantilPraticas: [40, 5, 1, 21, 8], scoreGestantes: 30.53, totalGestantes: 45, gestPraticas: [33, 14, 3, 18, 16, 16, 13, 6, 12, 1, 17] },
+      { id: 'ESF 08', cnes: '2438682', ine: '465011', ubs: 'UNIDADE BASICA DE SAUDE ESF 08 BAIRRO DOS IMIGRANTES', bairro: 'Bairro dos Imigrantes', prog: 168, esp: 455, scoreMaisAcesso: 36.92, scoreInfantil: 29.23, totalCriancas: 65, pontosInfantil: 1900, infantilPraticas: [41, 13, 13, 19, 9], scoreGestantes: 48.58, totalGestantes: 36, gestPraticas: [30, 26, 9, 20, 22, 20, 16, 12, 22, 7, 7] },
+      { id: 'ESF 09', cnes: '2437937', ine: '464864', ubs: 'UNIDADE BASICA DE SAUDE ESF 09 VILA MUTIRAO', bairro: 'Vila Mutirão', prog: 267, esp: 662, scoreMaisAcesso: 40.33, scoreInfantil: 16.84, totalCriancas: 38, pontosInfantil: 640, infantilPraticas: [14, 6, 2, 6, 4], scoreGestantes: 35.07, totalGestantes: 29, gestPraticas: [18, 18, 4, 7, 14, 14, 11, 6, 11, 2, 6] },
+      { id: 'ESF 10', cnes: '2438593', ine: '464910', ubs: 'UNIDADE BASICA DE SAUDE ESF 10 PARQUE ITAPUA I', bairro: 'Parque Itapuã I', prog: 422, esp: 548, scoreMaisAcesso: 77.01, scoreInfantil: 14.44, totalCriancas: 133, pontosInfantil: 1920, infantilPraticas: [65, 9, 4, 8, 10], scoreGestantes: 39.03, totalGestantes: 64, gestPraticas: [50, 35, 11, 25, 27, 22, 16, 18, 17, 19, 32] },
+      { id: 'ESF 11', cnes: '2437562', ine: '464848', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 92, esp: 242, scoreMaisAcesso: 38.02, scoreInfantil: 22.33, totalCriancas: 86, pontosInfantil: 1920, infantilPraticas: [51, 4, 1, 28, 12], scoreGestantes: 29.35, totalGestantes: 37, gestPraticas: [24, 16, 2, 20, 12, 10, 5, 5, 17, 2, 5] },
+      { id: 'ESF 12', cnes: '2438674', ine: '465003', ubs: 'UNIDADE BASICA DE SAUDE ESF 12 BRASILINHA 17', bairro: 'Brasilinha Qd 17', prog: 188, esp: 566, scoreMaisAcesso: 33.22, scoreInfantil: 18.46, totalCriancas: 26, pontosInfantil: 480, infantilPraticas: [14, 4, 3, 2, 1], scoreGestantes: 41.56, totalGestantes: 9, gestPraticas: [5, 5, 3, 3, 4, 4, 4, 3, 2, 4, 4] },
+      { id: 'ESF 13', cnes: '2438658', ine: '464988', ubs: 'UNIDADE BASICA DE SAUDE ESF 13 QD 08 SETOR LESTE', bairro: 'Qd 08 Setor Leste', prog: 224, esp: 665, scoreMaisAcesso: 33.68, scoreInfantil: 20.86, totalCriancas: 70, pontosInfantil: 1460, infantilPraticas: [41, 11, 6, 6, 9], scoreGestantes: 50.49, totalGestantes: 41, gestPraticas: [36, 22, 8, 16, 24, 22, 21, 10, 14, 18, 35] },
+      { id: 'ESF 14', cnes: '2437546', ine: '464821', ubs: 'UNIDADE BASICA DE SAUDE ESF 14 SAO GABRIEL', bairro: 'São Gabriel', prog: 114, esp: 628, scoreMaisAcesso: 18.15, scoreInfantil: 7.14, totalCriancas: 14, pontosInfantil: 100, infantilPraticas: [5, 0, 0, 0, 0], scoreGestantes: 40.94, totalGestantes: 16, gestPraticas: [16, 8, 0, 7, 8, 8, 7, 4, 0, 1, 12] },
+      { id: 'ESF 15', cnes: '2361493', ine: '464880', ubs: 'UNIDADE BASICA DE SAUDE ESF 15', bairro: 'Setor Central / ESF 15', prog: 118, esp: 291, scoreMaisAcesso: 40.55, scoreInfantil: 14.00, totalCriancas: 20, pontosInfantil: 280, infantilPraticas: [7, 4, 0, 0, 3], scoreGestantes: 26.17, totalGestantes: 18, gestPraticas: [12, 7, 1, 7, 7, 3, 5, 1, 0, 3, 5] },
+      { id: 'ESF 16', cnes: '2438240', ine: '464872', ubs: 'UNIDADE BASICA DE SAUDE ESF 16 BARROLANDIA', bairro: 'Barrolândia', prog: 175, esp: 453, scoreMaisAcesso: 38.63, scoreInfantil: 18.08, totalCriancas: 52, pontosInfantil: 940, infantilPraticas: [28, 7, 2, 4, 6], scoreGestantes: 40.86, totalGestantes: 49, gestPraticas: [40, 25, 4, 22, 26, 23, 20, 13, 6, 16, 23] },
+      { id: 'ESF 18', cnes: '2437562', ine: '464856', ubs: 'UNIDADE BASICA DE SAUDE ESF 11 E ESF 18 JARDIM PAQUETA', bairro: 'Jardim Paquetá', prog: 161, esp: 383, scoreMaisAcesso: 42.04, scoreInfantil: 17.56, totalCriancas: 90, pontosInfantil: 1580, infantilPraticas: [56, 8, 6, 5, 4], scoreGestantes: 37.98, totalGestantes: 51, gestPraticas: [38, 22, 5, 36, 20, 20, 16, 13, 7, 16, 18] },
+      { id: 'ESF 19', cnes: '2438631', ine: '464961', ubs: 'UNIDADE BASICA DE SAUDE ESF 04 E ESF 19 QD 02 LESTE', bairro: 'Qd 02 Leste', prog: 155, esp: 297, scoreMaisAcesso: 52.19, scoreInfantil: 27.50, totalCriancas: 64, pontosInfantil: 1760, infantilPraticas: [42, 5, 5, 27, 9], scoreGestantes: 43.36, totalGestantes: 25, gestPraticas: [22, 14, 3, 13, 10, 10, 10, 4, 12, 4, 16] },
+      { id: 'ESF 20', cnes: '2885808', ine: '464899', ubs: 'UNIDADE BASICA DE SAUDE ESF 20', bairro: 'Unidade ESF 20', prog: 51, esp: 635, scoreMaisAcesso: 8.03, scoreInfantil: 23.55, totalCriancas: 62, pontosInfantil: 1460, infantilPraticas: [35, 5, 7, 20, 6], scoreGestantes: 39.33, totalGestantes: 36, gestPraticas: [30, 18, 4, 3, 15, 13, 11, 9, 13, 14, 24] },
+      { id: 'ESF 21', cnes: '5065917', ine: '465070', ubs: 'UNIDADE BASICA DE SAUDE ESF 21 BAIRRO SAO JOSE', bairro: 'Bairro São José', prog: 270, esp: 552, scoreMaisAcesso: 48.91, scoreInfantil: 21.99, totalCriancas: 141, pontosInfantil: 3100, infantilPraticas: [75, 14, 10, 37, 19], scoreGestantes: 39.73, totalGestantes: 67, gestPraticas: [52, 36, 7, 23, 24, 24, 16, 13, 29, 20, 46] },
+      { id: 'ESF 22', cnes: '2438607', ine: '465119', ubs: 'UNIDADE BASICA DE SAUDE 02 NORTE', bairro: 'UBS 02 Norte', prog: 51, esp: 462, scoreMaisAcesso: 11.04, scoreInfantil: 18.11, totalCriancas: 53, pontosInfantil: 960, infantilPraticas: [33, 5, 1, 7, 2], scoreGestantes: 40.45, totalGestantes: 33, gestPraticas: [30, 10, 3, 22, 13, 14, 14, 8, 14, 0, 17] },
+      { id: 'ESF 23', cnes: '5442397', ine: '465089', ubs: 'UNIDADE BASICA DE SAUDE ESF 23 LAGOA FORMOSA', bairro: 'Lagoa Formosa', prog: 168, esp: 531, scoreMaisAcesso: 31.64, scoreInfantil: 25.00, totalCriancas: 48, pontosInfantil: 1200, infantilPraticas: [26, 4, 3, 22, 5], scoreGestantes: 36.13, totalGestantes: 24, gestPraticas: [21, 11, 2, 7, 12, 8, 8, 2, 9, 5, 9] },
+      { id: 'ESF 25', cnes: '7116926', ine: '465100', ubs: 'UNIDADE BASICA DE SAUDE ESF 25 QD 19 NORTE', bairro: 'Qd 19 Norte', prog: 180, esp: 526, scoreMaisAcesso: 34.22, scoreInfantil: 16.92, totalCriancas: 26, pontosInfantil: 440, infantilPraticas: [14, 2, 0, 1, 5], scoreGestantes: 34.84, totalGestantes: 32, gestPraticas: [26, 16, 2, 21, 11, 9, 10, 5, 8, 9, 4] },
+      { id: 'ESF 26', cnes: '7157355', ine: '465135', ubs: 'UNIDADE BASICA DE SAUDE ESF 26 QD 08 SETOR NORTE', bairro: 'Qd 08 Setor Norte', prog: 46, esp: 218, scoreMaisAcesso: 21.10, scoreInfantil: 20.00, totalCriancas: 51, pontosInfantil: 1020, infantilPraticas: [21, 9, 1, 12, 8], scoreGestantes: 35.59, totalGestantes: 29, gestPraticas: [24, 12, 3, 18, 13, 12, 9, 3, 9, 0, 9] },
+      { id: 'ESF 27', cnes: '7570104', ine: '1552651', ubs: 'UNIDADE BASICA DE SAUDE ESF 27 CORREGO RICO', bairro: 'Córrego Rico (Rural)', prog: 41, esp: 168, scoreMaisAcesso: 24.40, scoreInfantil: 23.53, totalCriancas: 17, pontosInfantil: 400, infantilPraticas: [10, 1, 2, 7, 0], scoreGestantes: 51.89, totalGestantes: 9, gestPraticas: [8, 7, 3, 6, 4, 4, 5, 3, 6, 2, 3] },
+      { id: 'ESF 28', cnes: '9019170', ine: '1609661', ubs: 'UNIDADE BASICA DE SAUDE ESF 28 NORTE', bairro: 'Setor Norte / ESF 28', prog: 225, esp: 465, scoreMaisAcesso: 48.39, scoreInfantil: 17.82, totalCriancas: 55, pontosInfantil: 980, infantilPraticas: [20, 4, 7, 9, 9], scoreGestantes: 37.44, totalGestantes: 16, gestPraticas: [14, 10, 1, 10, 8, 7, 5, 1, 3, 3, 3] }
     ];
 
-    // Os 11 Rótulos Completos das Boas Práticas de Gestação e Puerpério
+    // Os 5 Rótulos Oficiais do C2 — Cuidado no Desenvolvimento Infantil (20 pts cada)
+    const LABELS_INFANTIL_5 = [
+      '1ª consulta presencial até o 30º dia de vida',
+      'Pelo menos 9 consultas (presenciais/remotas) até 2 anos',
+      'Pelo menos 9 registros simultâneos de peso e altura',
+      'Pelo menos 2 visitas domiciliares do ACS/TACS (30d e 6m)',
+      'Vacinação completa (Penta, VIP, Pneumo 10v e Tríplice Viral)'
+    ];
+
+    // Os 11 Rótulos Completos do C3 — Cuidado na Gestação e Puerpério
     const LABELS_GESTANTES_11 = [
       '1ª consulta até a 12ª semana',
       'Vacina dTpa a partir da 20ª semana',
@@ -1157,76 +1166,75 @@
       'Testes (Sífilis, HIV, Hep B/C) no 1º trimestre'
     ];
 
-    // Metadados dos 8 Eixos Temáticos da APS
+    // Metadados dos Eixos Temáticos da APS (Ordem Oficial C1 a C7)
     const APS_EIXOS_META = {
       mais_acesso: {
-        titulo: '1. Mais Acesso à Atenção Primária à Saúde (APS)',
-        fonte: 'SISAB / e-SUS APS (Portaria GM/MS Nº 3.493/2024)',
+        titulo: 'C1 — Mais Acesso à Atenção Primária',
+        fonte: 'SIAPS / e-Gestor APS (Portaria GM/MS Nº 3.493/2024)',
         par: 'Ótimo > 50% a 70% | Bom > 30% a 50% | Suficiente > 10% a 30% | Regular ≤ 10% ou > 70%',
-        formula: 'Pontuação oficial do componente Mais Acesso e proporção entre Demanda Programada (cuidado continuado) e Demanda Espontânea (acolhimento/agudos).',
-        desc: 'Mede a pontuação do indicador Mais Acesso, o volume total mensal de atendimentos da unidade e o equilíbrio da agenda entre cuidado programado e demanda espontânea.'
-      },
-      gestacao: {
-        titulo: '2. Cuidado na Gestação e Puerpério',
-        fonte: 'SISAB / e-SUS APS (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)',
-        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
-        formula: 'Soma ponderada das 11 boas práticas do pré-natal e puerpério (1ª consulta oportuna, ≥7 consultas, PA, peso/altura, vacina dTpa, saúde bucal, exames sífilis/HIV/hepatites e visitas/consulta de puerpério).',
-        desc: 'Avalia a integralidade da linha de cuidado materno-infantil por Equipe (INE), com foco na captação precoce, testagem rápida e assistência pós-parto (puerpério).'
+        formula: 'Numerador: Atendimentos de Demanda Programada. Denominador: Total de Atendimentos (Programada + Espontânea) × 100.',
+        desc: 'Mede o equilíbrio entre demanda programada e demanda espontânea. O intervalo considerado ótimo é quando as consultas agendadas representam de 50% a 70% do total.'
       },
       infantil: {
-        titulo: '3. Cuidado no Desenvolvimento Infantil',
-        fonte: 'SISAB / RNDS / e-SUS APS',
-        par: 'Puericultura + Antropometria + Vacinação em Dia',
-        formula: 'Proporção de crianças de até 2 anos acompanhadas com consultas de puericultura, registros de peso/altura, visitas domiciliares do ACS e esquema vacinal completo.',
-        desc: 'Monitora o crescimento e desenvolvimento na primeira infância nas 25 eSF ativas de Planaltina/GO.'
+        titulo: 'C2 — Cuidado no Desenvolvimento Infantil',
+        fonte: 'SIAPS / e-Gestor APS (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
+        formula: 'Numerador: Somatório dos pontos das 5 boas práticas (20 pts cada) das crianças até 2 anos. Denominador: Total de crianças de até 2 anos vinculadas à equipe.',
+        desc: 'Avalia o cuidado integral a crianças de 0 a 24 meses (1ª consulta até 30º dia, ≥9 consultas, ≥9 registros de peso/altura, 2 visitas de ACS e vacinação completa).'
       },
-      hipertensao: {
-        titulo: '4. Cuidado da Pessoa com Hipertensão Arterial (HAS)',
-        fonte: 'SISAB / e-SUS APS',
-        par: 'Consulta Semestral + PA + Peso/Altura + Visitas ACS',
-        formula: 'Proporção de pessoas com hipertensão vinculadas à equipe com pelo menos 1 consulta médica/enfermagem, aferição de PA, antropometria e visitas de ACS no semestre.',
-        desc: 'Prevenção de desfechos cardiovasculares agudos (IAM e AVC) por meio do controle pressórico longitudinal.'
+      gestacao: {
+        titulo: 'C3 — Cuidado na Gestação e Puerpério',
+        fonte: 'SIAPS / e-Gestor APS (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
+        formula: 'Soma ponderada das 11 boas práticas do pré-natal e puerpério dividida pelo total de gestantes/puérperas vinculadas à equipe.',
+        desc: 'Monitora o pré-natal e o puerpério para reduzir a mortalidade materna e neonatal (consultas oportunas, exames de sífilis/HIV/hepatites, vacina dTpa, saúde bucal e puerpério).'
       },
       diabetes: {
-        titulo: '5. Cuidado da Pessoa com Diabetes Mellitus (DM)',
-        fonte: 'SISAB / e-SUS APS',
-        par: 'Consulta + PA + Hemoglobina Glicada (HbA1c) + Avaliação dos Pés',
-        formula: 'Proporção de pessoas com diabetes com consulta, aferição de PA, registro de Hemoglobina Glicada (HbA1c) e exame clínico dos pés (prevenção de pé diabético).',
-        desc: 'Garante o rastreamento de complicações micro e macrovasculares do diabetes na Atenção Primária.'
+        titulo: 'C4 — Cuidado da Pessoa com Diabetes',
+        fonte: 'SIAPS / e-SUS APS (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
+        formula: 'Proporção de pessoas com diabetes com consulta, aferição de PA, peso/altura, visitas de ACS, Hemoglobina Glicada (HbA1c) e avaliação dos pés.',
+        desc: 'Acompanha o tratamento continuado de pacientes com Diabetes Mellitus e a prevenção de complicações micro e macrovasculares.'
       },
-      mulher: {
-        titulo: '6. Cuidado da Mulher na Prevenção do Câncer',
-        fonte: 'SISAB / SISCAN / e-SUS APS',
-        par: 'Rastreamento de Câncer do Colo do Útero (25–64 anos) e Mama (50–69 anos)',
-        formula: 'Proporção de mulheres na faixa etária elegível com exame citopatológico / mamografia realizados e avaliados pela equipe.',
-        desc: 'Foco no diagnóstico precoce de neoplasias femininas e busca ativa de mulheres em atraso.'
+      hipertensao: {
+        titulo: 'C5 — Cuidado da Pessoa com Hipertensão',
+        fonte: 'SIAPS / e-SUS APS (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
+        formula: 'Proporção de pessoas com hipertensão vinculadas à equipe com consulta, aferição de PA, antropometria e visitas domiciliares do ACS.',
+        desc: 'Monitora o acompanhamento longitudinal de pessoas com Hipertensão Arterial na Atenção Primária.'
       },
       idoso: {
-        titulo: '7. Cuidado da Pessoa Idosa',
-        fonte: 'SISAB / e-SUS APS',
-        par: 'Avaliação Multidimensional (IVCF) + Consultas + Visitas Domiciliares',
-        formula: 'Proporção de idosos (≥ 60 anos) acompanhados com consultas, avaliação multidimensional da pessoa idosa, antropometria e visitas de ACS.',
-        desc: 'Promove o envelhecimento ativo, prevenção de quedas e revisão de polifarmácia.'
+        titulo: 'C6 — Cuidado da Pessoa Idosa',
+        fonte: 'SIAPS / e-SUS APS (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
+        formula: 'Proporção de idosos (≥ 60 anos) acompanhados com consultas, antropometria, visitas domiciliares do ACS e vacinação contra Influenza.',
+        desc: 'Avalia a atenção integral a indivíduos com 60 anos ou mais vinculados às equipes de Saúde da Família.'
+      },
+      mulher: {
+        titulo: 'C7 — Cuidado da Mulher na Prevenção do Câncer',
+        fonte: 'SIAPS / SISCAN / e-SUS APS (Portaria GM/MS Nº 3.493/2024)',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
+        formula: 'Acompanhamento de mulheres na faixa etária elegível com exame citopatológico de colo do útero, vacinação HPV, saúde sexual/reprodutiva e mamografia.',
+        desc: 'Foco no rastreamento oportuno e diagnóstico precoce de neoplasias femininas.'
       },
       bucal_emulti: {
-        titulo: '8. Saúde Bucal (eSB) e Equipes Multiprofissionais (eMulti)',
-        fonte: 'SISAB / CNES (Anexo V Portaria GM/MS Nº 7.799/2025)',
-        par: '1ª Consulta Programada + Tratamentos Concluídos + Ações Interprofissionais',
-        formula: 'Composto pelos 6 indicadores odontológicos (1ª consulta, tratamento concluído, taxa de exodontia, escovação supervisionada, preventivos e ART) e 2 indicadores eMulti.',
+        titulo: 'Anexo V — Saúde Bucal (eSB) e Equipes eMulti',
+        fonte: 'SISAB / CNES (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)',
+        par: 'Ótimo > 75 a 100 | Bom > 50 a 75 | Suficiente > 25 a 50 | Regular ≤ 25',
+        formula: 'Indicadores odontológicos (1ª consulta, tratamento concluído, exodontia, escovação supervisionada, preventivos e ART) e ações compartilhadas eMulti.',
         desc: 'Integra a avaliação das Equipes de Saúde Bucal e Equipes Multiprofissionais vinculadas às UBS do município.'
       }
     };
 
     function getActiveApsTeams() {
       return APS_RAW_TEAMS.map(t => {
-        // No relatório do e-Gestor (C1), 'prog' é o Numerador (Programada) e 'esp' na base bruta é o Denominador (Total)
-        const totalAtend = t.esp;
-        const espReal = Math.max(0, totalAtend - t.prog);
+        const totalAtend = t.esp; // Denominador C1 do e-Gestor (Volume Total)
+        const espReal = Math.max(0, totalAtend - t.prog); // Demanda Espontânea Real
         const scoreMaisAcesso = t.scoreMaisAcesso;
-        const propProg = scoreMaisAcesso; // A pontuação oficial já é a % de Demanda Programada
+        const propProg = scoreMaisAcesso;
         const propEsp = Number((100 - propProg).toFixed(2));
-        const fator = t.scoreGestantes / 35.55;
-        const praticasGest = t.gestPraticas || [47, 29, 25, 22, 19, 17, 16, 13, 11, 8, 5].map(v => Math.max(2, Math.round(v * fator)));
+        const praticasGest = t.gestPraticas;
+        const praticasInfantil = t.infantilPraticas;
 
         return {
           ...t,
@@ -1237,14 +1245,15 @@
           propProg,
           propEsp,
           praticasGest,
+          praticasInfantil,
           scoresPorEixo: {
             mais_acesso: scoreMaisAcesso,
+            infantil: t.scoreInfantil,
             gestacao: t.scoreGestantes,
-            infantil: Number(Math.min(92, t.scoreGestantes * 1.12).toFixed(2)),
-            hipertensao: Number(Math.min(88, t.scoreGestantes * 1.05).toFixed(2)),
             diabetes: Number(Math.min(86, t.scoreGestantes * 0.98).toFixed(2)),
-            mulher: Number(Math.min(85, t.scoreGestantes * 0.94).toFixed(2)),
+            hipertensao: Number(Math.min(88, t.scoreGestantes * 1.05).toFixed(2)),
             idoso: Number(Math.min(90, t.scoreGestantes * 1.08).toFixed(2)),
+            mulher: Number(Math.min(85, t.scoreGestantes * 0.94).toFixed(2)),
             bucal_emulti: Number(Math.min(89, t.scoreGestantes * 1.03).toFixed(2))
           }
         };
@@ -1253,7 +1262,6 @@
 
     function classifyPortaria3493(score, eixoKey = 'gestacao') {
       if (eixoKey === 'mais_acesso') {
-        // C1: Métrica de Equilíbrio (>50 e <=70 Ótimo | >30 e <=50 Bom | >10 e <=30 Suficiente | <=10 ou >70 Regular)
         if (score > 50 && score <= 70) {
           return { label: 'Ótimo', tier: 4, valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
         } else if (score > 30 && score <= 50) {
@@ -1266,7 +1274,6 @@
           return { label: 'Regular (≤10%)', tier: 1, valor: 2000, badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', barColor: '#ef4444' };
         }
       } else {
-        // C3 e demais: Métrica Linear (>75 e <=100 Ótimo | >50 e <=75 Bom | >25 e <=50 Suficiente | <=25 Regular)
         if (score > 75) {
           return { label: 'Ótimo', tier: 4, valor: 8000, badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', barColor: '#10b981' };
         } else if (score > 50 && score <= 75) {
@@ -1279,7 +1286,6 @@
       }
     }
 
-    // Ordena por Faixa de Conceito no Mais Acesso (Ótimo -> Bom -> Suficiente -> Regular) e linearmente nos demais eixos
     function sortTeamsByAxis(teams, eixoKey) {
       return [...teams].sort((a, b) => {
         const sA = a.scoresPorEixo[eixoKey];
@@ -1288,19 +1294,17 @@
 
         const cA = classifyPortaria3493(sA, 'mais_acesso');
         const cB = classifyPortaria3493(sB, 'mais_acesso');
-        if (cB.tier !== cA.tier) return cB.tier - cA.tier; // 1º Critério: Faixa (Ótimo > Bom > Suficiente > Regular)
+        if (cB.tier !== cA.tier) return cB.tier - cA.tier;
 
         if (cA.tier === 4) {
-          // Dentro do Ótimo (>50 a 70), ordena pela menor distância ao centro ideal de 60% (eSF 04 em 1º, eSF 19 em 2º)
           return Math.abs(sA - 60) - Math.abs(sB - 60);
         }
         if (cA.tier === 1) {
-          // Dentro do Regular (<=10 ou >70), ordena por quem desviou menos do limite
           const distA = sA > 70 ? (sA - 70) : (10 - sA);
           const distB = sB > 70 ? (sB - 70) : (10 - sB);
           return distA - distB;
         }
-        return sB - sA; // Dentro de Bom e Suficiente, maior nota vem primeiro
+        return sB - sA;
       });
     }
 
@@ -1394,6 +1398,12 @@
           label,
           val: targetEntity.praticasGest[i]
         }));
+      } else if (eixoKey === 'infantil') {
+        return LABELS_INFANTIL_5.map((label, i) => ({
+          num: i + 1,
+          label,
+          val: targetEntity.praticasInfantil[i]
+        }));
       } else if (eixoKey === 'mais_acesso') {
         return [
           { num: 1, label: 'Atendimentos de Demanda Programada (Cuidado Continuado)', val: targetEntity.prog },
@@ -1402,13 +1412,6 @@
       } else {
         const base = targetEntity.praticasGest[0] || 40;
         const mapas = {
-          infantil: [
-            { num: 1, label: '1ª Consulta de Puericultura até o 30º dia de vida', val: Math.round(base * 0.92) },
-            { num: 2, label: '≥ 09 Consultas de Puericultura até 2 anos de idade', val: Math.round(base * 0.74) },
-            { num: 3, label: '≥ 09 Registros Simultâneos de Peso e Altura', val: Math.round(base * 0.78) },
-            { num: 4, label: '≥ 02 Visitas Domiciliares realizadas por ACS/TACS', val: Math.round(base * 0.85) },
-            { num: 5, label: 'Vacinas Penta, Polio, Pneumo 10v e Tríplice Viral registradas', val: Math.round(base * 0.68) }
-          ],
           hipertensao: [
             { num: 1, label: '≥ 01 Consulta Presencial ou Remota (Méd/Enf) no semestre', val: Math.round(base * 3.4) },
             { num: 2, label: '≥ 01 Registro de Aferição de Pressão Arterial no semestre', val: Math.round(base * 3.2) },
@@ -1462,9 +1465,8 @@
 
       const rankedByAxis = sortTeamsByAxis(activeTeams, eixoKey);
       const mediaMunicipalPontuacao = activeTeams.reduce((acc, t) => acc + t.scoresPorEixo[eixoKey], 0) / activeTeams.length;
-      const mediaPropProgMunicipal = mediaMunicipalPontuacao; // No C1, a pontuação já é a % de Demanda Programada (36,32%)
-      const mediaPropEspMunicipal = 100 - mediaPropProgMunicipal; // Média de Demanda Espontânea nas 25 eSF (63,68%)
-      const totalEspMunicipal = activeTeams.reduce((acc, t) => acc + t.esp, 0);
+      const mediaPropProgMunicipal = activeTeams.reduce((acc, t) => acc + t.propProg, 0) / activeTeams.length;
+      const mediaPropEspMunicipal = 100 - mediaPropProgMunicipal;
 
       let targetEntity = null;
       let rankPosText = '';
@@ -1474,7 +1476,11 @@
         const sumEsp = activeTeams.reduce((a, t) => a + t.esp, 0);
         const sumTotal = activeTeams.reduce((a, t) => a + t.totalAtend, 0);
         const sumGestantes = activeTeams.reduce((a, t) => a + (t.totalGestantes || 0), 0);
-        const sumPraticas = LABELS_GESTANTES_11.map((_, idx) => activeTeams.reduce((a, t) => a + t.praticasGest[idx], 0));
+        const sumCriancas = activeTeams.reduce((a, t) => a + (t.totalCriancas || 0), 0);
+        const sumPontosInfantil = activeTeams.reduce((a, t) => a + (t.pontosInfantil || 0), 0);
+        const sumPraticasGest = LABELS_GESTANTES_11.map((_, idx) => activeTeams.reduce((a, t) => a + t.praticasGest[idx], 0));
+        const sumPraticasInf = LABELS_INFANTIL_5.map((_, idx) => activeTeams.reduce((a, t) => a + t.praticasInfantil[idx], 0));
+
         targetEntity = {
           id: 'MUNICIPIO',
           labelDuplo: 'Município de Planaltina/GO (25 eSF)',
@@ -1482,10 +1488,13 @@
           esp: sumEsp,
           totalAtend: sumTotal,
           totalGestantes: sumGestantes,
+          totalCriancas: sumCriancas,
+          pontosInfantil: sumPontosInfantil,
           propProg: Number(mediaPropProgMunicipal.toFixed(2)),
           propEsp: Number(mediaPropEspMunicipal.toFixed(2)),
           scoreAtual: Number(mediaMunicipalPontuacao.toFixed(2)),
-          praticasGest: sumPraticas
+          praticasGest: sumPraticasGest,
+          praticasInfantil: sumPraticasInf
         };
         rankPosText = 'Média das 25 eSF';
       } else {
@@ -1502,7 +1511,7 @@
       const sortedPractices = [...practices].sort((a, b) => b.val - a.val);
 
       // =====================================================================
-      // CARD 1: PONTUAÇÃO (% NO MAIS ACESSO) + CLASSIFICAÇÃO POR EIXO
+      // CARD 1: PONTUAÇÃO + MÉDIA PLANALTINA NO LUGAR DE PORTARIA 3.493
       // =====================================================================
       const faixa = classifyPortaria3493(targetEntity.scoreAtual, eixoKey);
       const sufixoCard1 = eixoKey === 'mais_acesso' ? '%' : '';
@@ -1514,10 +1523,11 @@
       const badge1 = document.getElementById('aps-kpi1-badge');
       badge1.textContent = faixa.label;
       badge1.className = `text-[11px] font-semibold px-2 py-0.5 rounded-full ${faixa.badgeClass}`;
-      document.getElementById('aps-kpi1-footer-left').textContent = `Média Planaltina: ${fmtNum(mediaMunicipalPontuacao, 2)}${sufixoCard1}`;
+      document.getElementById('aps-kpi1-footer-left').textContent = '';
+      document.getElementById('aps-kpi1-footer-right').textContent = `Média Planaltina: ${fmtNum(mediaMunicipalPontuacao, 2)}${sufixoCard1}`;
 
       // =====================================================================
-      // CARD 2: DEMANDA ESPONTÂNEA (MAIS ACESSO) OU SÍFILIS/HIV (GESTAÇÃO)
+      // CARD 2: ESPECÍFICO POR EIXO (C1 ESPONTÂNEA | C2 CONTINUIDADE | C3 SÍFILIS)
       // =====================================================================
       const kpi2IconWrap = document.getElementById('aps-kpi2-icon-wrap');
       const kpi2FooterRight = document.getElementById('aps-kpi2-footer-right');
@@ -1535,19 +1545,31 @@
         document.getElementById('aps-kpi2-footer-left').textContent = `1º Tri: ${fmtNum(perc1Tri, 1)}% • 3º Tri: ${fmtNum(perc3Tri, 1)}%`;
         kpi2IconWrap.innerHTML = `<i data-lucide="flask-conical" class="w-4 h-4"></i>`;
         kpi2FooterRight.textContent = `${fmtNum(perc1Tri, 0)}% / ${fmtNum(perc3Tri, 0)}% do total`;
+      } else if (eixoKey === 'infantil') {
+        const totalCri = targetEntity.totalCriancas || 1;
+        const cons9 = targetEntity.praticasInfantil[1]; // Prática B (≥9 Consultas)
+        const pesoAlt9 = targetEntity.praticasInfantil[2]; // Prática C (≥9 Peso/Altura)
+        const vacinas = targetEntity.praticasInfantil[4]; // Prática E (Vacinas)
+        const percVac = (vacinas / totalCri) * 100;
+
+        document.getElementById('aps-kpi2-title').textContent = 'Continuidade: ≥9 Cons. / ≥9 Peso-Alt.';
+        document.getElementById('aps-kpi2-value').textContent = `${fmtNum(cons9, 0)} / ${fmtNum(pesoAlt9, 0)}`;
+        document.getElementById('aps-kpi2-sub').textContent = 'Cons. / Antrop.';
+        document.getElementById('aps-kpi2-footer-left').textContent = '';
+        kpi2IconWrap.innerHTML = `<i data-lucide="baby" class="w-4 h-4"></i>`;
+        kpi2FooterRight.textContent = `Vacinação Completa: ${fmtNum(vacinas, 0)} (${fmtNum(percVac, 1)}%)`;
       } else {
-        // Exibe o volume e a % real de Demanda Espontânea da unidade + média e total municipal de espontânea
         const percEspUnidade = 100 - targetEntity.propProg;
         document.getElementById('aps-kpi2-title').textContent = 'Demanda Espontânea (Livre Demanda)';
         document.getElementById('aps-kpi2-value').textContent = `${fmtNum(targetEntity.esp, 0)}`;
         document.getElementById('aps-kpi2-sub').textContent = `(${fmtNum(percEspUnidade, 2)}% do total)`;
-        document.getElementById('aps-kpi2-footer-left').textContent = `Rede (25 eSF): ${fmtNum(totalEspMunicipal, 0)} espont.`;
+        document.getElementById('aps-kpi2-footer-left').textContent = '';
         kpi2IconWrap.innerHTML = `<i data-lucide="door-open" class="w-4 h-4"></i>`;
         kpi2FooterRight.textContent = `Média Planaltina: ${fmtNum(mediaPropEspMunicipal, 2)}%`;
       }
 
       // =====================================================================
-      // CARD 3 & CARD 4: MAIS ACESSO VS GESTAÇÃO VS DEMAIS EIXOS
+      // CARD 3 & CARD 4: C1 MAIS ACESSO | C2 INFANTIL | C3 GESTAÇÃO | DEMAIS
       // =====================================================================
       const kpi3IconWrap = document.getElementById('aps-kpi3-icon-wrap');
       const kpi3Badge = document.getElementById('aps-kpi3-badge');
@@ -1558,7 +1580,6 @@
       const kpi4Footer = document.getElementById('aps-kpi4-footer');
 
       if (eixoKey === 'mais_acesso') {
-        // Card 3: Denominador Oficial (Total de Atendimentos = Programada + Espontânea)
         document.getElementById('aps-kpi3-title').textContent = 'Volume Total de Atendimentos (DN)';
         document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalAtend, 0);
         kpi3Badge.textContent = 'Prog. + Espontânea';
@@ -1609,6 +1630,29 @@
           kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
           kpi4Footer.textContent = `Faltam ${fmtNum(faltaPP, 2)} p.p. (+${fmtNum(atendNecessarios, 0)} atend. prog.) p/ Faixa Ótima (> 50%)`;
         }
+      } else if (eixoKey === 'infantil') {
+        const bestP = sortedPractices[0];
+        const worstP = sortedPractices[sortedPractices.length - 1];
+        const totalCri = targetEntity.totalCriancas || 1;
+        const percBest = (bestP.val / totalCri) * 100;
+        const percWorst = (worstP.val / totalCri) * 100;
+
+        document.getElementById('aps-kpi3-title').textContent = 'Total de Crianças (0 a 2 anos)';
+        document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalCriancas, 0);
+        kpi3Badge.textContent = `${fmtNum(targetEntity.pontosInfantil, 0)} pts (NM)`;
+        kpi3IconWrap.innerHTML = `<i data-lucide="users" class="w-4 h-4"></i>`;
+        document.getElementById('aps-kpi3-footer').textContent = `Maior alcance: #${bestP.num} ${bestP.label} (${fmtNum(percBest, 1)}%)`;
+
+        document.getElementById('aps-kpi4-title').textContent = 'Alerta de Captação / Gargalo';
+        kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
+        kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
+        kpi4IconWrap.innerHTML = `<i data-lucide="alert-octagon" class="w-4 h-4"></i>`;
+        kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
+        kpi4Value.textContent = fmtNum(worstP.val, 0);
+        kpi4Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
+        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% das crianças • Ind. #${worstP.num}`;
+        kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
+        kpi4Footer.textContent = `#${worstP.num} — ${worstP.label}`;
       } else if (eixoKey === 'gestacao') {
         const bestP = sortedPractices[0];
         const worstP = sortedPractices[sortedPractices.length - 1];
@@ -1772,7 +1816,7 @@
             data: rankedTeams.map(t => t.scoresPorEixo[eixoKey]),
             backgroundColor: rankedTeams.map(t => {
               const c = classifyPortaria3493(t.scoresPorEixo[eixoKey], eixoKey).barColor;
-              return (t.id === selectedId || selectedId === 'MUNICIPIO') ? c : c + '99'; // Equipe selecionada 100% sólida; demais 60% opacidade
+              return (t.id === selectedId || selectedId === 'MUNICIPIO') ? c : c + '99';
             }),
             borderColor: rankedTeams.map(t => (t.id === selectedId) ? (isDark ? '#ffffff' : '#0f172a') : 'transparent'),
             borderWidth: rankedTeams.map(t => (t.id === selectedId) ? 2.5 : 0),
@@ -1801,14 +1845,22 @@
 
       const thPerc = document.getElementById('aps-diag-th-perc');
       if (thPerc) {
-        thPerc.textContent = eixoKey === 'mais_acesso'
-          ? '% sobre Total de Atendimentos (DN)'
-          : (eixoKey === 'gestacao' ? '% sobre Total de Gestantes' : '% sobre 1ª Consulta / Base');
+        if (eixoKey === 'mais_acesso') {
+          thPerc.textContent = '% sobre Total de Atendimentos (DN)';
+        } else if (eixoKey === 'infantil') {
+          thPerc.textContent = '% sobre Total de Crianças (DN)';
+        } else if (eixoKey === 'gestacao') {
+          thPerc.textContent = '% sobre Total de Gestantes (DN)';
+        } else {
+          thPerc.textContent = '% sobre 1ª Consulta / Base';
+        }
       }
 
       const refBase = eixoKey === 'mais_acesso'
         ? (targetEntity.totalAtend || 1)
-        : (eixoKey === 'gestacao' ? (targetEntity.totalGestantes || 1) : (sortedPractices[0]?.val || 1));
+        : (eixoKey === 'infantil'
+            ? (targetEntity.totalCriancas || 1)
+            : (eixoKey === 'gestacao' ? (targetEntity.totalGestantes || 1) : (sortedPractices[0]?.val || 1)));
 
       sortedPractices.forEach((p, idx) => {
         const percRel = (p.val / refBase) * 100;
@@ -1865,7 +1917,14 @@
         document.getElementById(`podium-${idx}-name`).textContent = t.labelDuplo;
         document.getElementById(`podium-${idx}-cnes`).textContent = `CNES ${t.cnes} • Faixa: ${c.label}`;
         document.getElementById(`podium-${idx}-score`).textContent = fmtNum(t.scoresPorEixo[eixoKey], 2) + sufixoScore;
-        document.getElementById(`podium-${idx}-class`).textContent = `${fmtNum(t.prog, 0)} prog. • ${fmtNum(t.esp, 0)} esp. (Total: ${fmtNum(t.totalAtend, 0)})`;
+
+        if (eixoKey === 'infantil') {
+          document.getElementById(`podium-${idx}-class`).textContent = `${fmtNum(t.totalCriancas, 0)} crianças • ${fmtNum(t.pontosInfantil, 0)} pts`;
+        } else if (eixoKey === 'gestacao') {
+          document.getElementById(`podium-${idx}-class`).textContent = `${fmtNum(t.totalGestantes, 0)} gestantes ativas`;
+        } else {
+          document.getElementById(`podium-${idx}-class`).textContent = `${fmtNum(t.prog, 0)} prog. • ${fmtNum(t.esp, 0)} esp.`;
+        }
       });
 
       const chartTitleEl = document.getElementById('aps-full-ranking-chart-title');
@@ -1964,127 +2023,17 @@
       });
     }
 
-    function renderApsRankingGeralAtendimentos(activeTeams, eixoKey, mediaPropProgMunicipal) {
-      const metaEixo = APS_EIXOS_META[eixoKey];
-      const rankedByScore = [...activeTeams].sort((a, b) => b.scoresPorEixo[eixoKey] - a.scoresPorEixo[eixoKey]);
-
-      const top3 = rankedByScore.slice(0, 3);
-      top3.forEach((t, i) => {
-        const idx = i + 1;
-        document.getElementById(`podium-${idx}-name`).textContent = t.labelDuplo;
-        document.getElementById(`podium-${idx}-cnes`).textContent = `CNES ${t.cnes} • ${t.ubs}`;
-        document.getElementById(`podium-${idx}-score`).textContent = fmtNum(t.scoresPorEixo[eixoKey], 2);
-        document.getElementById(`podium-${idx}-class`).textContent = `${fmtNum(t.prog, 0)} prog. • ${fmtNum(t.esp, 0)} esp.`;
-      });
-
-      const chartTitleEl = document.getElementById('aps-full-ranking-chart-title');
-      if (chartTitleEl) chartTitleEl.textContent = `Ranking Geral (25 eSF) — Pontuação: ${metaEixo.titulo}`;
-
-      const totalProgRede = rankedByScore.reduce((acc, t) => acc + t.prog, 0);
-      const totalEspRede = rankedByScore.reduce((acc, t) => acc + t.esp, 0);
-      const totalGeralRede = totalProgRede + totalEspRede;
-      const mediaPorEquipe = totalGeralRede / rankedByScore.length;
-
-      document.getElementById('rank-total-geral').textContent = fmtNum(totalGeralRede, 0);
-      document.getElementById('rank-media-equipe').textContent = fmtNum(mediaPorEquipe, 1);
-      document.getElementById('rank-total-prog').textContent = fmtNum(totalProgRede, 0);
-      document.getElementById('rank-perc-prog').textContent = `Média Planaltina: ${fmtNum(mediaPropProgMunicipal, 2)}%`;
-      document.getElementById('rank-total-esp').textContent = fmtNum(totalEspRede, 0);
-      document.getElementById('rank-perc-esp').textContent = `${fmtNum((totalEspRede / totalGeralRede) * 100, 1)}% do volume mensal`;
-
-      const ctxFull = document.getElementById('chartApsFullRanking').getContext('2d');
-      if (chartApsFullRankingInstance) chartApsFullRankingInstance.destroy();
-
-      const isDark = document.documentElement.classList.contains('dark');
-      const textColor = isDark ? '#cbd5e1' : '#334155';
-      const gridColor = isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.25)';
-      const maxScore = Math.max(...rankedByScore.map(t => t.scoresPorEixo[eixoKey]), 1);
-
-      chartApsFullRankingInstance = new Chart(ctxFull, {
-        type: 'bar',
-        plugins: [horizontalBarValueLabelsPlugin],
-        data: {
-          labels: rankedByScore.map((t, i) => `${i + 1}º • ${t.labelDuplo}`),
-          datasets: [{
-            label: 'Pontuação no Eixo',
-            data: rankedByScore.map(t => t.scoresPorEixo[eixoKey]),
-            backgroundColor: rankedByScore.map((_, i) => {
-              if (i === 0) return '#d97706';
-              if (i === 1) return '#475569';
-              if (i === 2) return '#ea580c';
-              return '#0284c7';
-            }),
-            borderRadius: 5,
-            barPercentage: 0.78
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: {
-            padding: { right: 48 }
-          },
-          plugins: {
-            legend: { display: false },
-            horizontalBarValueLabels: {
-              enabled: true,
-              decimals: 2,
-              suffix: ''
-            }
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              suggestedMax: Math.ceil(maxScore * 1.12),
-              grid: { color: gridColor },
-              ticks: { color: textColor }
-            },
-            y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11, weight: '500' } } }
-          }
-        }
-      });
-
-      const tbody = document.getElementById('aps-ranking-tbody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-
-      rankedByScore.forEach((t, idx) => {
-        const pos = idx + 1;
-        const posMedal = pos === 1 ? '🥇 1º' : (pos === 2 ? '🥈 2º' : (pos === 3 ? '🥉 3º' : `${pos}º`));
-
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors';
-        tr.innerHTML = `
-          <td class="py-2.5 px-4 font-mono font-bold text-slate-700 dark:text-slate-300">${posMedal}</td>
-          <td class="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">${t.labelDuplo}</td>
-          <td class="py-2.5 px-4 font-mono text-slate-500">${t.cnes}</td>
-          <td class="py-2.5 px-4 text-right tabular-nums font-bold text-sky-700 dark:text-sky-400 text-sm">${fmtNum(t.totalAtend, 0)}</td>
-          <td class="py-2.5 px-4 text-right tabular-nums font-medium text-emerald-700 dark:text-emerald-400">${fmtNum(t.prog, 0)}</td>
-          <td class="py-2.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300">${fmtNum(t.esp, 0)}</td>
-          <td class="py-2.5 px-4 text-right tabular-nums font-mono text-slate-500">${fmtNum(t.propProg, 2)}%</td>
-          <td class="py-2.5 px-4 text-right tabular-nums font-semibold">${fmtNum(t.scoresPorEixo[eixoKey], 2)}</td>
-          <td class="py-2.5 px-4 text-center">
-            <button onclick="openTeamRaioX('${t.id}')" class="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 font-semibold text-[11px] transition">
-              Abrir Raio-X
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
     function exportApsCSV() {
       const eixoKey = document.getElementById('aps-select-eixo')?.value || 'mais_acesso';
-      const activeTeams = getActiveApsTeams().sort((a, b) => b.scoresPorEixo[eixoKey] - a.scoresPorEixo[eixoKey]);
-      const header = 'posicao,cnes,ubs,equipe,bairro,total_geral_atendimentos,demanda_programada,demanda_espontanea,perc_programada,pontuacao_eixo_atual';
-      const rows = activeTeams.map((t, i) => `${i + 1},${t.cnes},"${t.ubs}",${t.id},"${t.bairro}",${t.totalAtend},${t.prog},${t.esp},${t.propProg},${t.scoresPorEixo[eixoKey]}`);
+      const activeTeams = sortTeamsByAxis(getActiveApsTeams(), eixoKey);
+      const header = 'posicao,cnes,ubs,equipe,bairro,total_geral_atendimentos,demanda_programada,demanda_espontanea,perc_programada,pontuacao_eixo_atual,faixa';
+      const rows = activeTeams.map((t, i) => `${i + 1},${t.cnes},"${t.ubs}",${t.id},"${t.bairro}",${t.totalAtend},${t.prog},${t.esp},${t.propProg},${t.scoresPorEixo[eixoKey]},"${classifyPortaria3493(t.scoresPorEixo[eixoKey], eixoKey).label}"`);
       const csv = [header, ...rows].join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'ranking_geral_25_esf_planaltina.csv';
+      a.download = `ranking_25_esf_${eixoKey}_planaltina.csv`;
       a.click();
     }
 
