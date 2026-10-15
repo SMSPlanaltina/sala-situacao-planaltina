@@ -440,11 +440,11 @@
             </div>
 
             <!-- BARRA DE COMANDO DUPLA (2 SELETORES SUSPENSOS INTELIGENTES) -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1 items-end">
               <!-- Seletor Suspenso 1: Eixo Temático em Ordem Estrita 1 a 8 -->
-              <div>
-                <label for="aps-select-eixo" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                  1. Eixo Temático — Componente de Qualidade (Portaria GM/MS Nº 3.493/2024 e Nº 7.799/2025)
+              <div class="min-w-0">
+                <label for="aps-select-eixo" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 truncate">
+                  1. Eixo Temático — Componente de Qualidade (Portaria Nº 3.493/24)
                 </label>
                 <div class="relative">
                   <select id="aps-select-eixo" onchange="handleApsSelectionChange()" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
@@ -461,8 +461,8 @@
               </div>
 
               <!-- Seletor Suspenso 2: Unidade / Equipe Analisada -->
-              <div id="aps-team-selector-wrapper">
-                <label for="aps-select-equipe" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+              <div id="aps-team-selector-wrapper" class="min-w-0">
+                <label for="aps-select-equipe" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 truncate">
                   2. Unidade / Equipe Analisada (25 eSF • INE Equipe + UBS)
                 </label>
                 <div class="relative">
@@ -472,7 +472,6 @@
                 </div>
               </div>
             </div>
-          </div>
 
           <!-- ==========================================
                SUB-VIEW APS 1: DIAGNÓSTICO POR EQUIPE / UBS
@@ -2357,21 +2356,28 @@
       activeBtn.className = 'nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400';
 
       const titles = {
-        'visao-geral': 'Visão Executiva — Sala de Situação (Planaltina/GO)',
+        'visao-geral': 'Visão Executiva — Sala de Situação',
         'pqavs': 'Vigilância em Saúde (PQA-VS)',
-        'aps': 'Atenção Primária à Saúde (APS • Portaria GM/MS Nº 3.493/2024)',
+        'aps': 'Atenção Primária à Saúde (APS)',
         'proprios': 'Indicadores Próprios Municipais',
         'mapas': 'Inteligência Geográfica (QGIS / GeoJSON)'
       };
       const subtitles = {
         'visao-geral': 'Síntese Estratégica PQA-VS + Atenção Primária + Arboviroses',
         'pqavs': 'Portaria GM/MS Nº 6.878/2025 • 14 Indicadores Pactuados',
-        'aps': '25 eSF em 22 UBS • Diagnóstico de Boas Práticas & Ranking Geral (25 eSF)',
+        'aps': 'Portaria GM/MS Nº 3.493/2024 • 25 eSF em 22 UBS',
         'proprios': 'Monitoramento Sazonal e Diagrama de Controle Epidemiológico',
         'mapas': 'Territorialização das 22 UBS / 25 eSF e Análise Espacial'
       };
       document.getElementById('page-title').textContent = titles[tabId];
       document.getElementById('page-subtitle').textContent = subtitles[tabId];
+
+      const chartModeWrapper = document.getElementById('top-chart-mode-wrapper');
+      if (chartModeWrapper) {
+        chartModeWrapper.className = tabId === 'pqavs'
+          ? 'hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-2.5 py-1.5 border border-slate-200 dark:border-slate-700'
+          : 'hidden';
+      }
 
       if (tabId === 'visao-geral') renderAllSubtabsAndExecutive();
       if (tabId === 'aps') renderApsView();
