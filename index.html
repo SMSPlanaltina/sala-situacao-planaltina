@@ -1467,6 +1467,7 @@
       const mediaMunicipalPontuacao = activeTeams.reduce((acc, t) => acc + t.scoresPorEixo[eixoKey], 0) / activeTeams.length;
       const mediaPropProgMunicipal = activeTeams.reduce((acc, t) => acc + t.propProg, 0) / activeTeams.length;
       const mediaPropEspMunicipal = 100 - mediaPropProgMunicipal;
+      const totalEspMunicipal = activeTeams.reduce((acc, t) => acc + t.esp, 0);
 
       let targetEntity = null;
       let rankPosText = '';
@@ -1511,7 +1512,7 @@
       const sortedPractices = [...practices].sort((a, b) => b.val - a.val);
 
       // =====================================================================
-      // CARD 1: PONTUAÇÃO + MÉDIA PLANALTINA NO LUGAR DE PORTARIA 3.493
+      // CARD 1: PONTUAÇÃO + RODAPÉ COMPLETO (MÉDIA PLANALTINA E PORTARIA 3.493)
       // =====================================================================
       const faixa = classifyPortaria3493(targetEntity.scoreAtual, eixoKey);
       const sufixoCard1 = eixoKey === 'mais_acesso' ? '%' : '';
@@ -1523,11 +1524,15 @@
       const badge1 = document.getElementById('aps-kpi1-badge');
       badge1.textContent = faixa.label;
       badge1.className = `text-[11px] font-semibold px-2 py-0.5 rounded-full ${faixa.badgeClass}`;
-      document.getElementById('aps-kpi1-footer-left').textContent = '';
-      document.getElementById('aps-kpi1-footer-right').textContent = `Média Planaltina: ${fmtNum(mediaMunicipalPontuacao, 2)}${sufixoCard1}`;
+
+      const kpi1FooterLeft = document.getElementById('aps-kpi1-footer-left');
+      const kpi1FooterRight = document.getElementById('aps-kpi1-footer-right');
+      kpi1FooterLeft.textContent = `Média Planaltina: ${fmtNum(mediaMunicipalPontuacao, 2)}${sufixoCard1}`;
+      kpi1FooterRight.className = 'font-mono font-semibold text-slate-700 dark:text-slate-300';
+      kpi1FooterRight.textContent = 'Portaria 3.493';
 
       // =====================================================================
-      // CARD 2: ESPECÍFICO POR EIXO (C1 ESPONTÂNEA | C2 CONTINUIDADE | C3 SÍFILIS)
+      // CARD 2: ESPECÍFICO POR EIXO COM RODAPÉ COMPLETO DOS DOIS LADOS
       // =====================================================================
       const kpi2IconWrap = document.getElementById('aps-kpi2-icon-wrap');
       const kpi2FooterRight = document.getElementById('aps-kpi2-footer-right');
@@ -1541,35 +1546,35 @@
 
         document.getElementById('aps-kpi2-title').textContent = 'Testes Sífilis e HIV (1º / 3º Trim.)';
         document.getElementById('aps-kpi2-value').textContent = `${fmtNum(teste1Tri, 0)} / ${fmtNum(teste3Tri, 0)}`;
-        document.getElementById('aps-kpi2-sub').textContent = '1º Tri / 3º Tri';
+        document.getElementById('aps-kpi2-sub').textContent = `(${fmtNum(totalGest, 0)} gestantes)`;
         document.getElementById('aps-kpi2-footer-left').textContent = `1º Tri: ${fmtNum(perc1Tri, 1)}% • 3º Tri: ${fmtNum(perc3Tri, 1)}%`;
         kpi2IconWrap.innerHTML = `<i data-lucide="flask-conical" class="w-4 h-4"></i>`;
         kpi2FooterRight.textContent = `${fmtNum(perc1Tri, 0)}% / ${fmtNum(perc3Tri, 0)}% do total`;
       } else if (eixoKey === 'infantil') {
         const totalCri = targetEntity.totalCriancas || 1;
-        const cons9 = targetEntity.praticasInfantil[1]; // Prática B (≥9 Consultas)
-        const pesoAlt9 = targetEntity.praticasInfantil[2]; // Prática C (≥9 Peso/Altura)
-        const vacinas = targetEntity.praticasInfantil[4]; // Prática E (Vacinas)
+        const cons9 = targetEntity.praticasInfantil[1];
+        const pesoAlt9 = targetEntity.praticasInfantil[2];
+        const vacinas = targetEntity.praticasInfantil[4];
         const percVac = (vacinas / totalCri) * 100;
 
         document.getElementById('aps-kpi2-title').textContent = 'Continuidade: ≥9 Cons. / ≥9 Peso-Alt.';
         document.getElementById('aps-kpi2-value').textContent = `${fmtNum(cons9, 0)} / ${fmtNum(pesoAlt9, 0)}`;
-        document.getElementById('aps-kpi2-sub').textContent = 'Cons. / Antrop.';
-        document.getElementById('aps-kpi2-footer-left').textContent = '';
+        document.getElementById('aps-kpi2-sub').textContent = `(${fmtNum(totalCri, 0)} crianças)`;
+        document.getElementById('aps-kpi2-footer-left').textContent = `Pontuação acumulada: ${fmtNum(targetEntity.pontosInfantil, 0)} pts`;
         kpi2IconWrap.innerHTML = `<i data-lucide="baby" class="w-4 h-4"></i>`;
-        kpi2FooterRight.textContent = `Vacinação Completa: ${fmtNum(vacinas, 0)} (${fmtNum(percVac, 1)}%)`;
+        kpi2FooterRight.textContent = `Vacinas: ${fmtNum(vacinas, 0)} (${fmtNum(percVac, 1)}%)`;
       } else {
         const percEspUnidade = 100 - targetEntity.propProg;
         document.getElementById('aps-kpi2-title').textContent = 'Demanda Espontânea (Livre Demanda)';
         document.getElementById('aps-kpi2-value').textContent = `${fmtNum(targetEntity.esp, 0)}`;
         document.getElementById('aps-kpi2-sub').textContent = `(${fmtNum(percEspUnidade, 2)}% do total)`;
-        document.getElementById('aps-kpi2-footer-left').textContent = '';
+        document.getElementById('aps-kpi2-footer-left').textContent = `Rede (25 eSF): ${fmtNum(totalEspMunicipal, 0)} espont.`;
         kpi2IconWrap.innerHTML = `<i data-lucide="door-open" class="w-4 h-4"></i>`;
         kpi2FooterRight.textContent = `Média Planaltina: ${fmtNum(mediaPropEspMunicipal, 2)}%`;
       }
 
       // =====================================================================
-      // CARD 3 & CARD 4: C1 MAIS ACESSO | C2 INFANTIL | C3 GESTAÇÃO | DEMAIS
+      // CARD 3 & CARD 4: ADAPTÁVEIS (MELHOR E PIOR INDICADOR COM % E SEM #)
       // =====================================================================
       const kpi3IconWrap = document.getElementById('aps-kpi3-icon-wrap');
       const kpi3Badge = document.getElementById('aps-kpi3-badge');
@@ -1582,6 +1587,7 @@
       if (eixoKey === 'mais_acesso') {
         document.getElementById('aps-kpi3-title').textContent = 'Volume Total de Atendimentos (DN)';
         document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalAtend, 0);
+        kpi3Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300';
         kpi3Badge.textContent = 'Prog. + Espontânea';
         kpi3IconWrap.innerHTML = `<i data-lucide="layers" class="w-4 h-4"></i>`;
         document.getElementById('aps-kpi3-footer').textContent = `${fmtNum(targetEntity.prog, 0)} Programados + ${fmtNum(targetEntity.esp, 0)} Espontâneos`;
@@ -1637,11 +1643,12 @@
         const percBest = (bestP.val / totalCri) * 100;
         const percWorst = (worstP.val / totalCri) * 100;
 
-        document.getElementById('aps-kpi3-title').textContent = 'Total de Crianças (0 a 2 anos)';
-        document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalCriancas, 0);
-        kpi3Badge.textContent = `${fmtNum(targetEntity.pontosInfantil, 0)} pts (NM)`;
-        kpi3IconWrap.innerHTML = `<i data-lucide="users" class="w-4 h-4"></i>`;
-        document.getElementById('aps-kpi3-footer').textContent = `Maior alcance: #${bestP.num} ${bestP.label} (${fmtNum(percBest, 1)}%)`;
+        document.getElementById('aps-kpi3-title').textContent = 'Maior Conformidade (Ponto Forte)';
+        document.getElementById('aps-kpi3-value').textContent = fmtNum(bestP.val, 0);
+        kpi3Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300';
+        kpi3Badge.textContent = `${fmtNum(percBest, 1)}% das crianças`;
+        kpi3IconWrap.innerHTML = `<i data-lucide="award" class="w-4 h-4"></i>`;
+        document.getElementById('aps-kpi3-footer').textContent = bestP.label;
 
         document.getElementById('aps-kpi4-title').textContent = 'Alerta de Captação / Gargalo';
         kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
@@ -1650,9 +1657,9 @@
         kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
         kpi4Value.textContent = fmtNum(worstP.val, 0);
         kpi4Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
-        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% das crianças • Ind. #${worstP.num}`;
+        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% das crianças`;
         kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
-        kpi4Footer.textContent = `#${worstP.num} — ${worstP.label}`;
+        kpi4Footer.textContent = worstP.label;
       } else if (eixoKey === 'gestacao') {
         const bestP = sortedPractices[0];
         const worstP = sortedPractices[sortedPractices.length - 1];
@@ -1660,11 +1667,12 @@
         const percBest = (bestP.val / totalGest) * 100;
         const percWorst = (worstP.val / totalGest) * 100;
 
-        document.getElementById('aps-kpi3-title').textContent = 'Total de Gestantes na Unidade';
-        document.getElementById('aps-kpi3-value').textContent = fmtNum(targetEntity.totalGestantes, 0);
-        kpi3Badge.textContent = 'Gestantes Ativas';
-        kpi3IconWrap.innerHTML = `<i data-lucide="users" class="w-4 h-4"></i>`;
-        document.getElementById('aps-kpi3-footer').textContent = `Maior alcance: #${bestP.num} ${bestP.label} (${fmtNum(percBest, 1)}%)`;
+        document.getElementById('aps-kpi3-title').textContent = 'Maior Conformidade (Ponto Forte)';
+        document.getElementById('aps-kpi3-value').textContent = fmtNum(bestP.val, 0);
+        kpi3Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300';
+        kpi3Badge.textContent = `${fmtNum(percBest, 1)}% das gestantes`;
+        kpi3IconWrap.innerHTML = `<i data-lucide="award" class="w-4 h-4"></i>`;
+        document.getElementById('aps-kpi3-footer').textContent = bestP.label;
 
         document.getElementById('aps-kpi4-title').textContent = 'Alerta de Captação / Gargalo';
         kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
@@ -1673,9 +1681,9 @@
         kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
         kpi4Value.textContent = fmtNum(worstP.val, 0);
         kpi4Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
-        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% das gestantes • Ind. #${worstP.num}`;
+        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% das gestantes`;
         kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
-        kpi4Footer.textContent = `#${worstP.num} — ${worstP.label}`;
+        kpi4Footer.textContent = worstP.label;
       } else {
         const bestP = sortedPractices[0];
         const worstP = sortedPractices[sortedPractices.length - 1];
@@ -1684,6 +1692,7 @@
 
         document.getElementById('aps-kpi3-title').textContent = 'Maior Conformidade (Ponto Forte)';
         document.getElementById('aps-kpi3-value').textContent = fmtNum(bestP.val, 0);
+        kpi3Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300';
         kpi3Badge.textContent = 'Líder na Equipe';
         kpi3IconWrap.innerHTML = `<i data-lucide="award" class="w-4 h-4"></i>`;
         document.getElementById('aps-kpi3-footer').textContent = bestP.label;
@@ -1695,9 +1704,9 @@
         kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
         kpi4Value.textContent = fmtNum(worstP.val, 0);
         kpi4Badge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
-        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% da base • Ind. #${worstP.num}`;
+        kpi4Badge.textContent = `${fmtNum(percWorst, 1)}% da base`;
         kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
-        kpi4Footer.textContent = `#${worstP.num} — ${worstP.label}`;
+        kpi4Footer.textContent = worstP.label;
       }
 
       lucide.createIcons();
