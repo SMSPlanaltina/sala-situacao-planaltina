@@ -150,8 +150,7 @@
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
             </span>
           </div>
-          <p id="data-source-label" class="text-xs text-slate-600 dark:text-slate-300 truncate">Google Sheets / SISAB</p>
-          <button onclick="openSheetsModal()" class="mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
+<p id="data-source-label" class="text-xs text-slate-600 dark:text-slate-300 truncate" title="Base Local SIM/SINASC/SINAN & e-Gestor APS">SIM / SINASC / SINAN & e-Gestor</p>          <button onclick="openSheetsModal()" class="mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
             <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-600"></i>
             Conectar Google Sheets
           </button>
@@ -221,7 +220,10 @@
               <div class="flex items-center gap-2">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Selecione o Indicador PQA-VS (Portaria GM/MS Nº 6.878/2025):</span>
               </div>
-              <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span id="top-source-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700">
+                  Fonte: Base Local SINASC / SMS Planaltina
+                </span>
                 <span id="top-meta-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-medium border border-emerald-200 dark:border-emerald-800/60">
                   <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
                   Meta Atingida
@@ -431,8 +433,18 @@
                 </div>
               </div>
 
-              <!-- Resumo Limpo da Rede Ativa -->
+              <!-- Período de Referência, Fonte Oficial e Rede Ativa -->
               <div class="flex flex-wrap items-center gap-2 text-[11px]">
+                <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-md px-2.5 py-1 border border-slate-200 dark:border-slate-700">
+                  <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 mr-1.5"></i>
+                  <span class="text-slate-500 dark:text-slate-400 mr-1">Competência:</span>
+                  <select id="aps-select-mes" class="bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer">
+                    <option value="2026-07" selected>Julho / 2026</option>
+                  </select>
+                </div>
+                <span class="px-2.5 py-1 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/60 font-medium">
+                  <strong>Fonte:</strong> e-Gestor APS / SIAPS (Base Local PEC)
+                </span>
                 <span class="px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-medium">
                   <strong>Rede Ativa:</strong> 25 eSF em 22 UBS
                 </span>
@@ -444,18 +456,18 @@
               <!-- Seletor Suspenso 1: Eixo Temático em Ordem Estrita C1 a C7 -->
               <div class="min-w-0">
                 <label for="aps-select-eixo" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 truncate">
-                  1. Eixo Temático — Componente de Qualidade (Portaria Nº 3.493/24)
+                  1. Eixo Temático — Componente de Qualidade (Portaria GM/MS Nº 3.493/2024)
                 </label>
                 <div class="relative">
                   <select id="aps-select-eixo" onchange="handleApsSelectionChange()" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
-                    <option value="mais_acesso" selected>C1 — Mais Acesso à Atenção Primária</option>
-                    <option value="infantil">C2 — Cuidado no Desenvolvimento Infantil</option>
-                    <option value="gestacao">C3 — Cuidado na Gestação e Puerpério</option>
-                    <option value="diabetes">C4 — Cuidado da Pessoa com Diabetes</option>
-                    <option value="hipertensao">C5 — Cuidado da Pessoa com Hipertensão</option>
-                    <option value="idoso">C6 — Cuidado da Pessoa Idosa</option>
-                    <option value="mulher">C7 — Cuidado da Mulher na Prevenção do Câncer</option>
-                    <option value="bucal_emulti">Anexo V — Saúde Bucal (eSB) e Equipes eMulti</option>
+                    <option value="mais_acesso" selected>C1 — Mais Acesso à Atenção Primária (Dados Reais • Jul/2026)</option>
+                    <option value="infantil">C2 — Cuidado no Desenvolvimento Infantil (Dados Reais • Jul/2026)</option>
+                    <option value="gestacao">C3 — Cuidado na Gestação e Puerpério (Dados Reais • Jul/2026)</option>
+                    <option value="diabetes">C4 — Cuidado da Pessoa com Diabetes (Estrutura em Homologação)</option>
+                    <option value="hipertensao">C5 — Cuidado da Pessoa com Hipertensão (Estrutura em Homologação)</option>
+                    <option value="idoso">C6 — Cuidado da Pessoa Idosa (Estrutura em Homologação)</option>
+                    <option value="mulher">C7 — Cuidado da Mulher na Prevenção do Câncer (Estrutura em Homologação)</option>
+                    <option value="bucal_emulti">Anexo V — Saúde Bucal (eSB) e Equipes eMulti (Estrutura em Homologação)</option>
                   </select>
                 </div>
               </div>
@@ -549,7 +561,27 @@
                 </div>
               </div>
             </div>
-
+            
+<!-- FAIXA DE INTEGRAÇÃO APS <-> VIGILÂNCIA EM SAÚDE & TOMADA DE DECISÃO -->
+            <div class="bg-sky-50/70 dark:bg-sky-950/30 p-3.5 rounded-xl border border-sky-200/80 dark:border-sky-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="flex items-start gap-2.5">
+                <span class="p-1.5 rounded-lg bg-sky-600 text-white mt-0.5 flex-shrink-0">
+                  <i data-lucide="git-merge" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <span id="aps-integracao-titulo" class="text-[11px] font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300 block">
+                    Integração APS ↔ Vigilância em Saúde & Aplicabilidade à Gestão (Julho/2026)
+                  </span>
+                  <p id="aps-integracao-texto" class="text-xs text-slate-700 dark:text-slate-300 mt-0.5 leading-relaxed">
+                    Equilíbrio de agenda impacta diretamente a captação oportuna de agravos de notificação compulsória (SINAN) e busca ativa vacinal no território.
+                  </p>
+                </div>
+              </div>
+              <span id="aps-integracao-tag" class="text-[11px] font-mono font-semibold px-2.5 py-1 rounded bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 whitespace-nowrap flex-shrink-0">
+                Interface: Atenção Primária + PQA-VS
+              </span>
+            </div>
+            
             <!-- BLOCO 2: OS 2 GRÁFICOS PRINCIPAIS LADO A LADO -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <!-- Gráfico da Esquerda: Checklist de Boas Práticas da Equipe -->
@@ -997,18 +1029,18 @@
     // =========================================================================
     const DATABASE = {
       sim: {
-        num: '01', curto: 'Mortalidade (SIM)', titulo: '1 - Mortalidade (SIM)', fonte: 'SIM / SVSA / MS',
+        num: '01', curto: 'Mortalidade (SIM)', titulo: '1 - Mortalidade (SIM — Base Local Municipal)', fonte: 'Base Local SIM / Vigilância Epidemiológica (SMS Planaltina/GO)',
         metaOficialTexto: '90% dos óbitos até 60 dias',
-        formula: 'Numerador: Óbitos notificados até 60 dias após o fim do mês. Denominador: Total de óbitos estimados (482).',
-        descricao: 'Avalia a oportunidade e regularidade da alimentação do Sistema de Informação sobre Mortalidade (SIM).',
+        formula: 'Numerador: Óbitos notificados até 60 dias após o fim do mês na Base Local SIM. Denominador: Total de óbitos estimados (482).',
+        descricao: 'Avalia a oportunidade e regularidade da alimentação do Sistema de Informação sobre Mortalidade (SIM) pela Vigilância Municipal.',
         metaAnual: 482, metaMensal: 40.17, menorMelhor: false,
         mensalReal: [47, 33, 49, 38, 57, 41, 44, 36, 21, null, null, null]
       },
       sinasc: {
-        num: '02', curto: 'Nascidos Vivos (SINASC)', titulo: '2 - Nascidos Vivos (SINASC)', fonte: 'SINASC / SVSA / MS',
+        num: '02', curto: 'Nascidos Vivos (SINASC)', titulo: '2 - Nascidos Vivos (SINASC — Base Local Municipal)', fonte: 'Base Local SINASC / Vigilância Epidemiológica (SMS Planaltina/GO)',
         metaOficialTexto: '90% dos nascidos vivos até 60 dias',
-        formula: 'Numerador: Nascidos vivos notificados no Sinasc até 60 dias após o fim do mês. Denominador: Total estimado (952).',
-        descricao: 'Subsidia o monitoramento da saúde materna e infantil por meio da captação oportuna de Declarações de Nascido Vivo.',
+        formula: 'Numerador: Nascidos vivos notificados na Base Local SINASC até 60 dias após o fim do mês. Denominador: Total estimado (952).',
+        descricao: 'Subsidia o monitoramento da saúde materna e infantil e a busca ativa na APS por meio da captação oportuna de Declarações de Nascido Vivo (DNV).',
         metaAnual: 952, metaMensal: 79.33, menorMelhor: false,
         mensalReal: [132, 110, 122, 111, 139, 128, null, null, null, null, null, null]
       },
@@ -1715,6 +1747,29 @@
       document.getElementById('aps-chart-left-badge').textContent = `${sortedPractices.length} Itens Avaliados`;
       document.getElementById('aps-diag-table-title').textContent = `Checklist Auditável — ${metaEixo.titulo} (${targetEntity.labelDuplo})`;
 
+      const intTitulo = document.getElementById('aps-integracao-titulo');
+      const intTexto = document.getElementById('aps-integracao-texto');
+      const intTag = document.getElementById('aps-integracao-tag');
+      if (intTitulo && intTexto && intTag) {
+        if (eixoKey === 'mais_acesso') {
+          intTitulo.textContent = 'Integração C1 (APS) ↔ Vigilância Epidemiológica • Competência: Julho/2026';
+          intTexto.textContent = 'Diretriz de Gestão: Unidades com demanda programada > 70% (Regular) restringem o acolhimento de casos febris agudos (Dengue/DNCI), atrasando a notificação oportuna no SINAN. Unidades ≤ 30% precisam converter demanda espontânea em acompanhamento longitudinal.';
+          intTag.textContent = 'Vínculo: PQA-VS #06 (DNCI) e #08 (Arboviroses)';
+        } else if (eixoKey === 'infantil') {
+          intTitulo.textContent = 'Integração C2 (Puericultura) ↔ SINASC & PNI (Vigilância) • Competência: Julho/2026';
+          intTexto.textContent = 'Diretriz de Gestão: Cruzar nominalmente a Base Local do SINASC com a captação até o 30º dia (52,9% na rede), corrigir a subdigitação antropométrica nas consultas (8,4% com ≥9 Peso/Altura) e realizar busca ativa com ACS das crianças em atraso vacinal.';
+          intTag.textContent = 'Vínculo: PQA-VS #02 (SINASC) e #04 (Vacinas PNI)';
+        } else if (eixoKey === 'gestacao') {
+          intTitulo.textContent = 'Integração C3 (Pré-Natal e Puerpério) ↔ DATHI/SINAN & SINASC • Competência: Julho/2026';
+          intTexto.textContent = 'Diretriz de Gestão: A baixa testagem rápida de Sífilis/HIV no 3º trimestre impacta diretamente o indicador de Sífilis Congênita da Vigilância. Priorizar busca ativa pelo ACS no puerpério e oferta de teste rápido no 3º trimestre em todas as 25 eSF.';
+          intTag.textContent = 'Vínculo: PQA-VS #11 (Sífilis Congênita) e #02 (SINASC)';
+        } else {
+          intTitulo.textContent = `${metaEixo.titulo} • Nota Metodológica de Transparência (Julho/2026)`;
+          intTexto.textContent = 'Limitação declarada: Eixo com estrutura analítica homologada no painel; captação da base nominal por INE junto ao e-Gestor APS programada para o próximo ciclo de atualização da Sala de Situação.';
+          intTag.textContent = 'Status: Estrutura em Homologação';
+        }
+      }
+
       renderApsDiagnosticCharts(sortedPractices, rankedByAxis, eixoKey, targetEntity.id);
       renderApsDiagnosticTable(sortedPractices, eixoKey, targetEntity);
       renderApsRankingGeralAtendimentos(activeTeams, eixoKey, mediaPropProgMunicipal);
@@ -2282,6 +2337,8 @@
 
       document.getElementById('drawer-ind-title').textContent = data.titulo;
       document.getElementById('drawer-ind-source').textContent = data.fonte;
+      const topSourceBadge = document.getElementById('top-source-badge');
+      if (topSourceBadge) topSourceBadge.textContent = `Fonte: ${data.fonte}`;
       document.getElementById('drawer-ind-target').textContent = data.metaOficialTexto;
       document.getElementById('drawer-ind-formula').textContent = data.formula;
       document.getElementById('drawer-ind-desc').textContent = data.descricao;
@@ -2554,11 +2611,12 @@
       }).addTo(mapInstance);
 
       const pontosSaude = [
-        { nome: 'Secretaria Municipal de Saúde / Vigilância', coords: [-15.4528, -47.6142], status: 'Sede Administrativa • 14 Indicadores PQA-VS + 25 eSF' },
-        { nome: 'UBS 02 Norte (CNES 2438607)', coords: [-15.4410, -47.6100], status: 'eSF 07 e eSF 22' },
-        { nome: 'UBS ESF 01 Qd 03 Setor Oeste (CNES 2440253)', coords: [-15.4560, -47.6240], status: 'eSF 01 • 657 atendimentos no mês' },
-        { nome: 'UBS ESF 10 Parque Itapuã I (CNES 2438593)', coords: [-15.4480, -47.5990], status: 'eSF 10 • 1º Lugar Mais Acesso (77,01 pts • 970 atendimentos)' },
-        { nome: 'UBS Jardim Paquetá (CNES 2437562)', coords: [-15.4650, -47.6180], status: 'eSF 11 e eSF 18' }
+        { nome: 'Secretaria Municipal de Saúde / Vigilância em Saúde', coords: [-15.4528, -47.6142], status: 'Sede Administrativa • Sala de Situação (14 Ind. PQA-VS + 25 eSF)' },
+        { nome: 'UBS ESF 04 e ESF 19 Qd 02 Leste (CNES 2438631)', coords: [-15.4450, -47.6040], status: '1º e 2º Lugar C1 Mais Acesso (Faixa Ótimo: eSF 04 com 58,12% e eSF 19 com 52,19%)' },
+        { nome: 'UBS ESF 03 Qd 04 Leste (CNES 2438666)', coords: [-15.4495, -47.6015], status: 'eSF 03 • 1º Lugar C2 Infantil (30,17 pts) e 2º Lugar C3 Gestação (50,64 pts)' },
+        { nome: 'UBS ESF 01 Qd 03 Setor Oeste (CNES 2440253)', coords: [-15.4560, -47.6240], status: 'eSF 01 • 574 atendimentos no mês (C3 Gestação: 35,55 pts)' },
+        { nome: 'UBS ESF 10 Parque Itapuã I (CNES 2438593)', coords: [-15.4480, -47.5990], status: 'eSF 10 • 548 atendimentos (77,01% prog. • Alerta Agenda >70%) | 64 gestantes' },
+        { nome: 'UBS Jardim Paquetá (CNES 2437562)', coords: [-15.4650, -47.6180], status: 'eSF 11 e eSF 18 • 176 crianças (0 a 2 anos) e 88 gestantes vinculadas' }
       ];
 
       pontosSaude.forEach(p => {
@@ -2757,7 +2815,7 @@
           }
         }
         localStorage.setItem('sms_planaltina_sheets_url', url);
-        document.getElementById('data-source-label').textContent = 'Google Sheets (Sincronizado)';
+        document.getElementById('data-source-label').textContent = 'Bases Locais & e-Gestor (Ativo)';
         renderPqavs(currentIndicatorKey);
         if (!silent) closeSheetsModal();
       } catch (e) {
