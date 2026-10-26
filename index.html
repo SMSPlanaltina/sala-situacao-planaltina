@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sala de Situação em Saúde — Planaltina/GO</title>
+  <title>Sala de Situação em Saúde — Planaltina/GO | Vigilância e APS</title>
+  <meta name="description" content="Painel Executivo e Sala de Situação em Saúde de Planaltina/GO. Monitoramento dos 14 indicadores do PQA-VS e das 25 equipes eSF da Atenção Primária (SIAPS/e-Gestor)." />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Vigilância em Saúde e Atenção Primária — SMS Planaltina/GO" />
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -141,18 +144,27 @@
         </div>
       </div>
 
-      <!-- Rodapé da Sidebar: Status da Planilha Google Sheets -->
+      <!-- Rodapé da Sidebar: Governança, Segurança LGPD & Modo Admin Oculto -->
       <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
         <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
           <div class="flex items-center justify-between mb-1">
             <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Fonte de Dados</span>
-            <span id="sync-badge" class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+            <span id="sync-badge" ondblclick="unlockAdminMode()" title="Duplo clique para Modo Gestor" class="cursor-pointer select-none inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
             </span>
           </div>
-<p id="data-source-label" class="text-xs text-slate-600 dark:text-slate-300 truncate" title="Base Local SIM/SINASC/SINAN & e-Gestor APS">SIM / SINASC / SINAN & e-Gestor</p>          <button onclick="openSheetsModal()" class="mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
+          <p id="data-source-label" class="text-xs text-slate-600 dark:text-slate-300 truncate" title="Base Local SIM/SINASC/SINAN & e-Gestor APS">SIM / SINASC / SINAN & e-Gestor</p>
+          
+          <!-- Selo Público de Segurança e LGPD (Visível para todos) -->
+          <div class="mt-2 pt-2 border-t border-slate-200/70 dark:border-slate-700/60 flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 flex-shrink-0"></i>
+            <span class="leading-tight">Dados Agregados • Conformidade LGPD (Leitura Segura)</span>
+          </div>
+
+          <!-- Botão Admin (Oculto para o público; visível apenas com ?admin=1 ou duplo clique em Online) -->
+          <button id="btn-admin-sheets" onclick="openSheetsModal()" class="hidden mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
             <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-600"></i>
-            Conectar Google Sheets
+            Configurar Planilha (Admin)
           </button>
         </div>
       </div>
@@ -1647,10 +1659,10 @@
           kpi4Card.className = 'bg-white dark:bg-slate-900 p-5 rounded-xl border border-rose-200/90 dark:border-rose-900/60 shadow-sm flex flex-col justify-between';
           kpi4IconWrap.className = 'p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400';
           kpi4IconWrap.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i>`;
-          kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums';
+          kpi4Value.className = 'text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums whitespace-nowrap';
           kpi4Value.textContent = `+${fmtNum(excessoPP, 2)} p.p.`;
-          kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300';
-          kpi4Badge.textContent = 'Caiu p/ Regular (>70%)';
+          kpi4Badge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 whitespace-nowrap';
+          kpi4Badge.textContent = 'Regular (>70%)';
           kpi4Footer.className = 'truncate font-medium text-rose-600 dark:text-rose-400';
           kpi4Footer.textContent = `Ultrapassou teto de 70% (+${fmtNum(excessoProg, 0)} prog. acima do limite de ${fmtNum(limite70Prog, 0)})`;
         } else {
@@ -2824,10 +2836,21 @@
       }
     }
 
+    function unlockAdminMode() {
+      const btn = document.getElementById('btn-admin-sheets');
+      if (btn) btn.classList.toggle('hidden');
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       const savedUrl = localStorage.getItem('sms_planaltina_sheets_url') || DEFAULT_SHEETS_CSV_URL;
       const inputEl = document.getElementById('sheets-csv-url');
       if (inputEl) inputEl.value = savedUrl;
+
+      // Se você acessar o link com ?admin=1 no final, libera o botão automaticamente
+      if (window.location.search.includes('admin=1')) {
+        unlockAdminMode();
+      }
+
       renderPqavs('sinasc');
       populateApsTeamDropdown();
       connectGoogleSheets(true);
