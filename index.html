@@ -78,91 +78,115 @@
       border-radius: 0.75rem;
       z-index: 10;
     }
+    /* Regras do Menu Lateral Retrátil */
+    #sidebar.collapsed {
+      width: 4.5rem !important;
+    }
+    #sidebar.collapsed .sidebar-hide {
+      display: none !important;
+    }
+    #sidebar.collapsed .nav-btn {
+      justify-content: center !important;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+    #sidebar.collapsed #sidebar-header {
+      justify-content: center !important;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
 
   <div class="flex h-screen overflow-hidden">
 
-    <!-- SIDEBAR (NÍVEL 1 DE NAVEGAÇÃO) -->
+    <!-- SIDEBAR (NÍVEL 1 DE NAVEGAÇÃO RETRÁTIL) -->
     <aside id="sidebar" class="w-64 flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-200 z-30">
       <div>
-        <!-- Logo / Cabeçalho Institucional -->
-        <div class="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-slate-800">
-          <div class="w-9 h-9 rounded-lg bg-sky-600 flex items-center justify-center text-white shadow-sm">
-            <i data-lucide="activity" class="w-5 h-5"></i>
+        <!-- Logo / Cabeçalho Institucional + Botão Retrátil -->
+        <div id="sidebar-header" class="h-16 px-4 flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800">
+          <div class="sidebar-hide flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-sky-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
+              <i data-lucide="activity" class="w-5 h-5"></i>
+            </div>
+            <div class="leading-tight truncate">
+              <h1 class="font-bold text-sm tracking-tight text-slate-900 dark:text-white truncate">Sala de Situação</h1>
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">SMS • Planaltina/GO</p>
+            </div>
           </div>
-          <div class="leading-tight">
-            <h1 class="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Sala de Situação</h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SMS • Planaltina/GO</p>
-          </div>
+
+          <button onclick="toggleSidebar()" id="sidebar-toggle-btn" title="Recolher / Expandir menu lateral" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex-shrink-0">
+            <i id="sidebar-toggle-icon" data-lucide="panel-left-close" class="w-5 h-5"></i>
+          </button>
         </div>
 
         <!-- Menu Principal -->
         <div class="p-3 space-y-1">
-          <p class="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Módulos Analíticos</p>
+          <p class="sidebar-hide px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Módulos Analíticos</p>
 
-          <button onclick="switchMainTab('visao-geral')" id="nav-visao-geral" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button onclick="switchMainTab('visao-geral')" id="nav-visao-geral" title="Visão Executiva" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
             <div class="flex items-center gap-3">
               <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
-              <span>Visão Executiva</span>
+              <span class="sidebar-hide">Visão Executiva</span>
             </div>
-            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Geral</span>
+            <span class="sidebar-hide text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Geral</span>
           </button>
 
-          <button onclick="switchMainTab('pqavs')" id="nav-pqavs" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400">
+          <button onclick="switchMainTab('pqavs')" id="nav-pqavs" title="Vigilância (PQA-VS)" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400">
             <div class="flex items-center gap-3">
               <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i>
-              <span>Vigilância (PQA-VS)</span>
+              <span class="sidebar-hide">Vigilância (PQA-VS)</span>
             </div>
-            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">14</span>
+            <span class="sidebar-hide text-[11px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">14</span>
           </button>
 
-          <button onclick="switchMainTab('aps')" id="nav-aps" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button onclick="switchMainTab('aps')" id="nav-aps" title="Atenção Primária (APS)" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
             <div class="flex items-center gap-3">
               <i data-lucide="heart-pulse" class="w-4 h-4 flex-shrink-0"></i>
-              <span>Atenção Primária (APS)</span>
+              <span class="sidebar-hide">Atenção Primária (APS)</span>
             </div>
-            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">25 eSF</span>
+            <span class="sidebar-hide text-[11px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">25 eSF</span>
           </button>
 
-          <button onclick="switchMainTab('proprios')" id="nav-proprios" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button onclick="switchMainTab('proprios')" id="nav-proprios" title="Indicadores Próprios" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
             <div class="flex items-center gap-3">
               <i data-lucide="flame" class="w-4 h-4 flex-shrink-0"></i>
-              <span>Indicadores Próprios</span>
+              <span class="sidebar-hide">Indicadores Próprios</span>
             </div>
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span class="sidebar-hide w-2 h-2 rounded-full bg-amber-500"></span>
           </button>
 
-          <button onclick="switchMainTab('mapas')" id="nav-mapas" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button onclick="switchMainTab('mapas')" id="nav-mapas" title="Inteligência Geográfica" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
             <div class="flex items-center gap-3">
               <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i>
-              <span>Inteligência Geográfica</span>
+              <span class="sidebar-hide">Inteligência Geográfica</span>
             </div>
-            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">QGIS</span>
+            <span class="sidebar-hide text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">QGIS</span>
           </button>
         </div>
       </div>
 
       <!-- Rodapé da Sidebar: Governança, Segurança LGPD & Modo Admin Oculto -->
       <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
-        <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Fonte de Dados</span>
-            <span id="sync-badge" ondblclick="unlockAdminMode()" title="Duplo clique para Modo Gestor" class="cursor-pointer select-none inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+        <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+          <div class="flex items-center justify-center sm:justify-between mb-1">
+            <span class="sidebar-hide text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Fonte de Dados</span>
+            <span id="sync-badge" ondblclick="unlockAdminMode()" title="Online • Duplo clique para Modo Gestor" class="cursor-pointer select-none inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="sidebar-hide">Online</span>
             </span>
           </div>
-          <p id="data-source-label" class="text-xs text-slate-600 dark:text-slate-300 truncate" title="Base Local SIM/SINASC/SINAN & e-Gestor APS">SIM / SINASC / SINAN & e-Gestor</p>
-          
-          <!-- Selo Público de Segurança e LGPD (Visível para todos) -->
-          <div class="mt-2 pt-2 border-t border-slate-200/70 dark:border-slate-700/60 flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+          <p id="data-source-label" class="sidebar-hide text-xs text-slate-600 dark:text-slate-300 truncate" title="Base Local SIM/SINASC/SINAN & e-Gestor APS">SIM / SINASC / SINAN & e-Gestor</p>
+
+          <!-- Selo Público de Segurança e LGPD -->
+          <div class="sidebar-hide mt-2 pt-2 border-t border-slate-200/70 dark:border-slate-700/60 flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
             <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 flex-shrink-0"></i>
             <span class="leading-tight">Dados Agregados • Conformidade LGPD (Leitura Segura)</span>
           </div>
 
-          <!-- Botão Admin (Oculto para o público; visível apenas com ?admin=1 ou duplo clique em Online) -->
-          <button id="btn-admin-sheets" onclick="openSheetsModal()" class="hidden mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
+          <!-- Botão Admin -->
+          <button id="btn-admin-sheets" onclick="openSheetsModal()" class="sidebar-hide hidden mt-2 w-full py-1.5 px-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition">
             <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-600"></i>
             Configurar Planilha (Admin)
           </button>
@@ -2169,6 +2193,24 @@
       };
     }
 
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const icon = document.getElementById('sidebar-toggle-icon');
+      if (!sb) return;
+
+      const isCollapsed = sb.classList.toggle('collapsed');
+      if (icon) {
+        icon.setAttribute('data-lucide', isCollapsed ? 'panel-left-open' : 'panel-left-close');
+        lucide.createIcons();
+      }
+
+      // Redimensiona gráficos e mapa suavemente após recolher/expandir
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        if (mapInstance) mapInstance.invalidateSize();
+      }, 220);
+    }
+
     function renderAllSubtabsAndExecutive() {
       const container = document.getElementById('pqavs-subtabs-container');
       const execGrid = document.getElementById('exec-semaforo-grid');
@@ -2187,6 +2229,7 @@
 
         const isActive = (key === currentIndicatorKey);
         const dotColor = m.atingiuMeta ? 'bg-emerald-500' : 'bg-amber-500';
+        const numLimpo = Number(item.num); // Converte '01' para 1, '02' para 2, '10' para 10
 
         const btn = document.createElement('button');
         btn.id = 'subtab-' + key;
@@ -2197,7 +2240,7 @@
 
         btn.innerHTML = `
           <div class="truncate">
-            <span class="font-mono text-[10px] ${isActive ? 'text-sky-100' : 'text-slate-400'} mr-1">#${item.num}</span>
+            <span class="font-mono text-[11px] font-bold ${isActive ? 'text-sky-100' : 'text-slate-400'} mr-1">${numLimpo}</span>
             <span>${item.curto}</span>
           </div>
           <span class="w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-white' : dotColor}"></span>
@@ -2226,7 +2269,7 @@
         cardExec.innerHTML = `
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="text-[10px] font-mono font-semibold text-slate-400 uppercase">PQA-VS #${item.num}</span>
+              <span class="text-[10px] font-mono font-semibold text-slate-400 uppercase">PQA-VS ${numLimpo}</span>
               <h4 class="text-xs font-semibold text-slate-900 dark:text-white mt-0.5">${item.curto}</h4>
             </div>
             <span class="px-2 py-0.5 text-[11px] font-mono font-bold rounded ${badgeColor}">${valorFormatado}</span>
